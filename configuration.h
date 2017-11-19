@@ -1,26 +1,28 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-const int MAX_NR_CONFIGS = 8;
-const int EEPROM_ADDRESS_CONFIG = 0;
+#include <avr/io.h>
+
+#define SENSOR_PIN A0
+#define PUMP_PIN   13
 
 struct config_item
 {
-  char name[16];
-  int8_t sensor_pin;
-  int8_t pump_pin;
   unsigned char auto_mode;
   uint16_t threashold;
   uint16_t seconds_on;
   uint16_t hours_off;
+  uint16_t sensor_cntval;
 };
 
 enum {
-  AUTO_MODE_HIGHER,
+  AUTO_MODE_HIGHER = 0,
   AUTO_MODE_LOWER,
-  AUTO_MODE_TIMER
+  AUTO_MODE_TIMER,
+  MANUAL_MODE,
 };
 
-extern struct config_item configuration[MAX_NR_CONFIGS]; 
+const int EEPROM_ADDRESS_CONFIG = 0;
+extern struct config_item configuration; 
 
 #endif // CONFIGURATION_H
