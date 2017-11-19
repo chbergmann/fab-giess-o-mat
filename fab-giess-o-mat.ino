@@ -6,6 +6,7 @@
 
 struct config_item configuration[MAX_NR_CONFIGS]; 
 time_t lasttime_pump_on[MAX_NR_CONFIGS]; 
+extern int sensorvalues[MAX_NR_CONFIGS];
 
 void setup() {
   // put your setup code here, to run once:
@@ -14,6 +15,7 @@ void setup() {
   for(uint8_t i=0; i<MAX_NR_CONFIGS; i++) {
     lasttime_pump_on[i] = now();
   }
+  start_read_sensors();
   Serial.begin(115200);
   mainmenu();
 }
@@ -40,7 +42,7 @@ void loop() {
 }
 
 
-bool config_valid(int cfg_index) {
+bool config_valid(uint8_t cfg_index) {
   if(cfg_index < 0 || cfg_index >= MAX_NR_CONFIGS)
     return false;
   if(configuration[cfg_index].name[0] == 0xFF)
@@ -58,9 +60,10 @@ void show_time() {
 }
 
 void process_giessomat() {
+  loop_sensors();
+    
   for(uint8_t i=0; i<MAX_NR_CONFIGS; i++) {
     if(config_valid(i)) {
-      int sensorval = analogRead(configuration[i].sensor_pin);
       time_t difftime = now() - lasttime_pump_on[i];
       int seconds_on = minute(difftime) * 60 + second(difftime);
       
@@ -69,8 +72,8 @@ void process_giessomat() {
       }
       
       if(hour(difftime) >= configuration[i].hours_off) {
-        if((configuration[i].auto_mode == AUTO_MODE_HIGHER && sensorval > configuration[i].threashold) ||
-           (configuration[i].auto_mode == AUTO_MODE_LOWER  && sensorval < configuration[i].threashold) ||
+        if((configuration[i].auto_mode == AUTO_MODE_HIGHER && sensorvalues[i] > configuration[i].threashold) ||
+           (configuration[i].auto_mode == AUTO_MODE_LOWER  && sensorvalues[i] < configuration[i].threashold) ||
            (configuration[i].auto_mode == AUTO_MODE_TIMER)) {
               digitalWrite(configuration[i].pump_pin, HIGH);
               lasttime_pump_on[i] = now();

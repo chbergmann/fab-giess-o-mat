@@ -2,11 +2,15 @@
 
 #include <EEPROM.h>
 #include "configuration.h"
+extern int16_t sensor_cntval;
 
 void mainmenu() {
   Serial.println("\r\n* Giess-o-mat Hauptmenue *");
   Serial.println(" k - Konfiguration anzeigen");
   Serial.println(" u - Uhr stellen");
+  Serial.print(" c - Sensor timer value [us]: ");
+  Serial.println(sensor_cntval * 16);
+  Serial.println(" s - Sensoren lesen");
   
   for(uint8_t i=0; i<MAX_NR_CONFIGS; i++) {
     if(config_valid(i))
@@ -31,6 +35,13 @@ void mainmenu() {
         case 'k': print_configuration(); break;
         case 'n': new_plant(); break;
         case 'u': set_time(); break;
+        case 'c': {
+          Serial.print("\r\nnew timer value: ");
+          int us = Serial_readNumber();
+          sensor_cntval = us / 16;
+          break;
+        }
+        case 's': loop_read_sensors(); break;
       }
       mainmenu();
       return;
@@ -124,11 +135,6 @@ void configmenu(int cfg_index) {
 
   int lastmilli = 0;
   while(1) {
-    if(configuration[cfg_index].sensor_pin >= 0 && millis() - lastmilli > 250) {
-      Serial.print("\rSensorwert: ");
-      Serial.print(analogRead(configuration[cfg_index].sensor_pin));
-      lastmilli = millis();
-    }
     
     if(Serial.available() > 0) {
       int menu = Serial.read();

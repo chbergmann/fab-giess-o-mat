@@ -7,8 +7,8 @@ const int EEPROM_ADDRESS_CONFIG = 0;
 struct config_item
 {
   char name[16];
-  uint8_t sensor_pin;
-  uint8_t pump_pin;
+  int8_t sensor_pin;
+  int8_t pump_pin;
   unsigned char auto_mode;
   uint16_t threashold;
   uint16_t seconds_on;
