@@ -1,4 +1,20 @@
-/* fab-giess-o-mat */
+/*
+ *  This file is part of fab-giess-o-mat.
+ *  
+ *  fab-giess-o-mat is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ */
 
 #include <EEPROM.h>
 #include "configuration.h"
@@ -6,39 +22,32 @@ extern int16_t sensor_cntval;
 
 const String SWITCH_PUMP_IF = "Pumpe einschalten, wenn ";
 const String AUTO_MODE_HIGHER_STR = "Sensorwert ueberschritten wird";
-const String AUTO_MODE_LOWER_STR = "Sensorwert unterschritten wird";
 const String AUTO_MODE_TIMER_STR = "die minimale Ausschaltzeit abgelaufen ist (Sensor ignorieren)";
 const String MANUAL_MODE_STR = "i oder o gedrueckt wird";
 
 void mainmenu() {
-  Serial.println("\r\n* Giess-o-mat Hauptmenue *");
-  Serial.print("Pumpe an Pin D");
-  Serial.println(PUMP_PIN);
-  Serial.print("Sensor an Pin A");
-  Serial.println(SENSOR_PIN - A0);
+  Serial.println("\r\n* Giess-o-mat *");
+  Serial.print("Pumpe  an Pin D"); Serial.println(PUMP_PIN);
+  Serial.print("Sensor an Pin A"); Serial.println(SENSOR_PIN - A0);
+  Serial.print("vorletzte Pump-Zeit: "); show_lasttime_pump_on(1);
+  Serial.print("letzte    Pump-Zeit: "); show_lasttime_pump_on(0);
+  Serial.println("* Hauptmenue *");
   Serial.println(" u - Uhr stellen");
-  Serial.print(" c - Sensor timer value [us]: ");
-  Serial.println(configuration.sensor_cntval * 16);
-  Serial.print(" p - ");
-  Serial.print(SWITCH_PUMP_IF);
-  switch(configuration.auto_mode) {
-    case AUTO_MODE_HIGHER: Serial.println(AUTO_MODE_HIGHER_STR); break;
-    case AUTO_MODE_LOWER:  Serial.println(AUTO_MODE_LOWER_STR); break;
-    case AUTO_MODE_TIMER:  Serial.println(AUTO_MODE_TIMER_STR); break;
-    case MANUAL_MODE:     Serial.println(MANUAL_MODE_STR); break;
-  }
-  Serial.print(" e - Einschaltzeit: ");
-  Serial.print(configuration.seconds_on);
-  Serial.println(" sek");
-  Serial.print(" a - minimale Ausschaltzeit: ");
-  Serial.print(configuration.hours_off);
-  Serial.println(" std");
+  Serial.print  (" p - ");
+    Serial.print(SWITCH_PUMP_IF);
+    switch(configuration.auto_mode) {
+      case AUTO_MODE_HIGHER: Serial.println(AUTO_MODE_HIGHER_STR); break;
+      case AUTO_MODE_TIMER:  Serial.println(AUTO_MODE_TIMER_STR); break;
+      case MANUAL_MODE:     Serial.println(MANUAL_MODE_STR); break;
+    }
+  Serial.print  (" e - Einschaltzeit: "); Serial.print(configuration.seconds_on); Serial.println(" sek");
+  Serial.print  (" a - minimale Ausschaltzeit: "); Serial.print(configuration.hours_off); Serial.println(" std");
   Serial.println(" i - Pumpe ein");
   Serial.println(" o - Pumpe aus");
-  
-  Serial.print(" x - Schaltschwelle: ");
-  Serial.println(configuration.threashold);
-  Serial.println(" s - Sensoren lesen");
+  Serial.print  (" x - Schaltschwelle: "); Serial.println(configuration.threashold);
+  Serial.println(" s - Sensor lesen");
+  Serial.println(" k - Sensor kalibrieren");
+  Serial.print  (" c - Sensor Lese-Wartezeit [us]: "); Serial.println(configuration.sensor_cntval * 16);
   Serial.println();
   
   while(1) {
@@ -62,57 +71,58 @@ void mainmenu() {
           Serial.print(" 1 - ");
           Serial.println(AUTO_MODE_HIGHER_STR);
           Serial.print(" 2 - ");
-          Serial.println(AUTO_MODE_LOWER_STR);
-          Serial.print(" 3 - ");
           Serial.println(AUTO_MODE_TIMER_STR);
-          Serial.print(" 4 - ");
+          Serial.print(" 3 - ");
           Serial.println(MANUAL_MODE_STR);
           while(!Serial.available());
           switch(Serial.read()) {
             case '1': configuration.auto_mode = AUTO_MODE_HIGHER; break;
-            case '2': configuration.auto_mode = AUTO_MODE_LOWER; break;
-            case '3': configuration.auto_mode = AUTO_MODE_TIMER; break;
-            case '4': configuration.auto_mode = MANUAL_MODE; break;
+            case '2': configuration.auto_mode = AUTO_MODE_TIMER; break;
+            case '3': configuration.auto_mode = MANUAL_MODE; break;
           }
-          EEPROM.put(EEPROM_ADDRESS_CONFIG, configuration);          
+          save_configuration();          
           break;
         }
 
         case 'e': {
           Serial.print("\r\nEinschaltzeit in Sekunden: ");
           configuration.seconds_on = Serial_readNumber();
-          EEPROM.put(EEPROM_ADDRESS_CONFIG, configuration);
+          save_configuration();
           break;
         }
 
         case 'a': {
           Serial.print("\r\nminimale Ausschaltzeit in Stunden: ");
           configuration.hours_off = Serial_readNumber();
-          EEPROM.put(EEPROM_ADDRESS_CONFIG, configuration);
+          save_configuration();
           break;
         }
         
         case 'i': {
           configuration.auto_mode = MANUAL_MODE;
-          digitalWrite(PUMP_PIN, HIGH);
+          pump_on();
           break;  
         }
         
         case 'o': {
           configuration.auto_mode = MANUAL_MODE;
-          digitalWrite(PUMP_PIN, LOW);
+          pump_off();
           break;  
         }        
 
         case 'x': {
           Serial.print("\r\nSchaltschwelle: ");
           configuration.threashold = Serial_readNumber();
-          EEPROM.put(EEPROM_ADDRESS_CONFIG, configuration);
+          save_configuration();
           break;
         }
         
         case 's': 
           loop_print_sensors(); 
+          break;
+
+        case 'k':
+          calibrate_sensor();
           break;
       }
       mainmenu();

@@ -1,8 +1,35 @@
+/*
+ *  This file is part of fab-giess-o-mat.
+ *  
+ *  fab-giess-o-mat is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ **
+ * 
+ *  Einfacher kapazitiver Sensor
+ * 
+ *  Der Sensor besteht nur aus 2 Kondensatorplatten und einem hochohmigen 
+ *  Widerstand. Der Arduino schaltet zuerst einen Ausgang auf high und läd 
+ *  den Kondensator auf. Dann wir der Pin auf ADC-Input umgeschaltet und 
+ *  nach einer kurzen Zeit gemessen, wieviel Spannung noch anliegt.
+ * 
+ */
+ 
 #include "configuration.h"
 
-int sensorvalue = 0;
-bool mode_charging = true;
-bool sensor_ready = false;
+volatile int sensorvalue = 0;
+volatile bool mode_charging = true;
+volatile bool sensor_ready = false;
 
 void start_read_sensors() {
   sensor_ready = false;
@@ -19,7 +46,7 @@ void start_read_sensors() {
   TCCR1B = 0;
   TCNT1  = 0;
 
-  OCR1A = 62500;            // compare match register 16MHz/256/1Hz
+  OCR1A = 625;            // compare match register 16MHz/256/100Hz
   TCCR1B |= (1 << CS12);    // 256 prescaler 
   TIMSK1 |= (1 << OCIE1A);  // enable timer compare interrupt
   interrupts();   
@@ -81,5 +108,37 @@ ISR(TIMER1_COMPA_vect)          // timer compare interrupt service routine
     TCNT1  = 0;
     interrupts();   
   }
+}
+
+void calibrate_sensor() {
+  Serial.println();
+  calibrate_sensor(1, 100);
+}
+
+void calibrate_sensor(int start, int inc) {
+  int t = 1;    
+  for(int t=start; t< start + inc * 10; t = t + inc) {
+    calibrate(t);
+    if(sensorvalue < 150) {
+      if(inc == 1) {
+        configuration.sensor_cntval = t - 1;
+        save_configuration();
+      }
+      else {
+        calibrate_sensor(t - inc, inc / 10);
+      }
+      return;
+    }
+  }
+}
+
+void calibrate(int timerval) {
+  configuration.sensor_cntval = timerval;
+  start_read_sensors();
+  long microseconds = configuration.sensor_cntval * TIMER1_PRESCALE_US;
+  Serial.print(microseconds);
+  Serial.print(" us:\t");
+  while(!sensor_ready);
+  Serial.println(sensorvalue);
 }
 
