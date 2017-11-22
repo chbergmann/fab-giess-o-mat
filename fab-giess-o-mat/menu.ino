@@ -16,16 +16,15 @@
  * 
  */
 
-#include <EEPROM.h>
 #include "configuration.h"
-extern int16_t sensor_cntval;
 
 const String SWITCH_PUMP_IF = "Pumpe einschalten, wenn ";
 const String AUTO_MODE_HIGHER_STR = "Sensorwert ueberschritten wird";
+const String AUTO_MODE_LOWER_STR = "Sensorwert unterschritten wird";
 const String AUTO_MODE_TIMER_STR = "die minimale Ausschaltzeit abgelaufen ist (Sensor ignorieren)";
 const String MANUAL_MODE_STR = "i oder o gedrueckt wird";
 
-void mainmenu() {
+void print_mainmenu() {
   Serial.println("\r\n* Giess-o-mat *");
   Serial.print("Pumpe  an Pin D"); Serial.println(PUMP_PIN);
   Serial.print("Sensor an Pin A"); Serial.println(SENSOR_PIN - A0);
@@ -37,11 +36,15 @@ void mainmenu() {
     Serial.print(SWITCH_PUMP_IF);
     switch(configuration.auto_mode) {
       case AUTO_MODE_HIGHER: Serial.println(AUTO_MODE_HIGHER_STR); break;
+      case AUTO_MODE_LOWER: Serial.println(AUTO_MODE_LOWER_STR); break;
       case AUTO_MODE_TIMER:  Serial.println(AUTO_MODE_TIMER_STR); break;
-      case MANUAL_MODE:     Serial.println(MANUAL_MODE_STR); break;
+      default:     Serial.println(MANUAL_MODE_STR); break;
     }
   Serial.print  (" e - Einschaltzeit: "); Serial.print(configuration.seconds_on); Serial.println(" sek");
-  Serial.print  (" a - minimale Ausschaltzeit: "); Serial.print(configuration.hours_off); Serial.println(" std");
+  Serial.print  (" a - minimale Ausschaltzeit [std:min]: "); 
+  char txtbuf[10];
+  sprintf(txtbuf, "%02d:%02d", configuration.minutes_off / 60, configuration.minutes_off % 60);
+  Serial.println(txtbuf);
   Serial.println(" i - Pumpe ein");
   Serial.println(" o - Pumpe aus");
   Serial.print  (" x - Schaltschwelle: "); Serial.println(configuration.threashold);
@@ -49,10 +52,10 @@ void mainmenu() {
   Serial.println(" k - Sensor kalibrieren");
   Serial.print  (" c - Sensor Lese-Wartezeit [us]: "); Serial.println(configuration.sensor_cntval * 16);
   Serial.println();
-  
-  while(1) {
-    loop(); 
-    if(Serial.available() > 0) {
+} 
+ 
+void loop_mainmenu() {
+  if(Serial.available() > 0) {
       switch(Serial.read()) {
         case 'u': 
           set_time(); 
@@ -71,14 +74,17 @@ void mainmenu() {
           Serial.print(" 1 - ");
           Serial.println(AUTO_MODE_HIGHER_STR);
           Serial.print(" 2 - ");
-          Serial.println(AUTO_MODE_TIMER_STR);
+          Serial.println(AUTO_MODE_LOWER_STR);
           Serial.print(" 3 - ");
+          Serial.println(AUTO_MODE_TIMER_STR);
+          Serial.print(" 4 - ");
           Serial.println(MANUAL_MODE_STR);
           while(!Serial.available());
           switch(Serial.read()) {
             case '1': configuration.auto_mode = AUTO_MODE_HIGHER; break;
-            case '2': configuration.auto_mode = AUTO_MODE_TIMER; break;
-            case '3': configuration.auto_mode = MANUAL_MODE; break;
+            case '2': configuration.auto_mode = AUTO_MODE_LOWER; break;
+            case '3': configuration.auto_mode = AUTO_MODE_TIMER; break;
+            case '4': configuration.auto_mode = MANUAL_MODE; break;
           }
           save_configuration();          
           break;
@@ -92,8 +98,11 @@ void mainmenu() {
         }
 
         case 'a': {
-          Serial.print("\r\nminimale Ausschaltzeit in Stunden: ");
-          configuration.hours_off = Serial_readNumber();
+          Serial.print("\r\nminimale Ausschaltzeit Stunden: ");
+          int hours_off = Serial_readNumber();
+          Serial.print("\r\nMinuten: ");
+          int minutes_off = Serial_readNumber();
+          configuration.minutes_off = hours_off * 60 + minutes_off;
           save_configuration();
           break;
         }
@@ -125,9 +134,7 @@ void mainmenu() {
           calibrate_sensor();
           break;
       }
-      mainmenu();
-      return;
-    }
+      print_mainmenu();      
   }
 }
 

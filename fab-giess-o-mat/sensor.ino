@@ -61,13 +61,17 @@ bool loop_sensors() {
 }
 
 void loop_print_sensors() {
+  unsigned long last_millisec = 0;
   Serial.println();
   start_read_sensors();
   
   while(Serial.available() == 0) {
+    loop_giessomat();
     if(sensor_ready) {
       Serial.println(sensorvalue);
       start_read_sensors();
+      while(millis() - last_millisec < 500);
+      last_millisec = millis();
     }
   }
 }
@@ -112,17 +116,20 @@ ISR(TIMER1_COMPA_vect)          // timer compare interrupt service routine
 
 void calibrate_sensor() {
   Serial.println();
+  Serial.println("Sensor trocken legen !");
   calibrate_sensor(1, 100);
 }
 
-void calibrate_sensor(int start, int inc) {
-  int t = 1;    
+void calibrate_sensor(int start, int inc) {  
   for(int t=start; t< start + inc * 10; t = t + inc) {
     calibrate(t);
     if(sensorvalue < 150) {
       if(inc == 1) {
         configuration.sensor_cntval = t - 1;
         save_configuration();
+        Serial.print("Ermittelte Entladezeit [us]: ");
+        long microseconds = configuration.sensor_cntval * TIMER1_PRESCALE_US;
+        Serial.println(microseconds);
       }
       else {
         calibrate_sensor(t - inc, inc / 10);
@@ -140,5 +147,6 @@ void calibrate(int timerval) {
   Serial.print(" us:\t");
   while(!sensor_ready);
   Serial.println(sensorvalue);
+  Serial.flush();
 }
 

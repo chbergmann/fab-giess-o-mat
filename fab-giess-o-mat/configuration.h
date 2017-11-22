@@ -32,12 +32,13 @@ struct config_item
   unsigned char auto_mode;
   uint16_t threashold;
   uint16_t seconds_on;
-  uint16_t hours_off;
+  uint16_t minutes_off;
   uint16_t sensor_cntval;
 };
 
 enum {
   AUTO_MODE_HIGHER = 0,
+  AUTO_MODE_LOWER,
   AUTO_MODE_TIMER,
   MANUAL_MODE,
 };
