@@ -24,18 +24,18 @@
 struct config_item configuration; 
 time_t lasttime_pump_on[2]; 
 Adafruit_NeoPixel ledstrip = Adafruit_NeoPixel(1, LED_PIN, NEO_GRB + NEO_KHZ800);
+bool pump_is_on = false;
 
 void setup() {
   // put your setup code here, to run once:
   EEPROM.get(EEPROM_ADDRESS_CONFIG, configuration);
-  if(configuration.auto_mode > AUTO_MODE_TIMER) {
+  if(configuration.threashold_dry > 1023) {
     // Standardwerte
-    configuration.auto_mode = AUTO_MODE_TIMER;
-    configuration.threashold_dry = 200;
-    configuration.threashold_wet = 300;
+    configuration.threashold_dry = 0;
+    configuration.threashold_wet = 0;
     configuration.seconds_on = 5;
     configuration.minutes_off = 24 * 60;
-    configuration.sensor_cntval = 62;
+    configuration.sensor_cntval = 625;
   }
  
   lasttime_pump_on[0] = 0;
@@ -44,14 +44,21 @@ void setup() {
   pinMode(PUMP_PIN, OUTPUT);
   pinMode(SENSOR_PIN, INPUT);
   pinMode(LED_PIN, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+
+  /* prototype board settings */
+  pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
   pinMode(7, OUTPUT);
+  digitalWrite(4, LOW);
   digitalWrite(5, HIGH);
   digitalWrite(7, LOW);
-  start_read_sensors();
+  /* prototype board settings */
+
   
   setup_spi();
   Serial.begin(115200);
+  start_read_sensors();
   print_mainmenu();
   
   ledstrip.begin();
@@ -62,6 +69,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   loop_sensors();
   loop_mainmenu();
+  loop_button();
   
   if(millis() - last_millis >= 1000) {
     last_millis += 1000;
@@ -71,16 +79,29 @@ void loop() {
   } 
 }
 
+void loop_button() {
+  if(digitalRead(BUTTON_PIN) == LOW) {
+    if(!pump_is_on) {
+      pump_on();
+    }
+    else {
+      pump_off();
+    }
+  }
+}
+
 void pump_on() {
-  if(digitalRead(PUMP_PIN) == LOW) {
+  if(!pump_is_on) {
     digitalWrite(PUMP_PIN, HIGH);
     lasttime_pump_on[1] = lasttime_pump_on[0];
     lasttime_pump_on[0] = now();
   }
+  pump_is_on = true;
 }
 
 void pump_off() {
   digitalWrite(PUMP_PIN, LOW);
+  pump_is_on = false;
 }
 
 void show_time(time_t t) {
@@ -94,6 +115,7 @@ void show_time_sensor() {
   show_time(now());
   Serial.print(" Sensor: ");
   Serial.print(get_sensorvalue());
+  Serial.print("  ");
 }
 
 void show_lasttime_pump_on(uint8_t last) {
@@ -101,24 +123,28 @@ void show_lasttime_pump_on(uint8_t last) {
   Serial.println();
 }
 
-void loop_giessomat() {
-  if(configuration.auto_mode != MANUAL_MODE) {
-    time_t difftime = now() - lasttime_pump_on[0];
-    uint16_t seconds_on = minute(difftime) * 60 + second(difftime);
-    uint16_t minutes_off = hour(difftime) * 60 + minute(difftime);
+bool is_sensor_config_ok() {
+  bool use_sensor = false;
+  if(configuration.threashold_dry > 20 && configuration.threashold_wet > configuration.threashold_dry)
+    use_sensor = true;
 
-    if(seconds_on >= configuration.seconds_on) {
+  return use_sensor;
+}
+
+void loop_giessomat() {
+  time_t difftime = now() - lasttime_pump_on[0];
+  uint16_t seconds_on = minute(difftime) * 60 + second(difftime);
+  uint16_t minutes_off = hour(difftime) * 60 + minute(difftime);
+
+  if(seconds_on >= configuration.seconds_on || 
+    (is_sensor_config_ok() && get_sensorvalue() >= configuration.threashold_wet)) {
       pump_off();
-    }
-    
-    if(minutes_off >= configuration.minutes_off) {
-      if((configuration.auto_mode == AUTO_MODE_HIGHER && get_sensorvalue() > configuration.threashold_wet) ||
-         (configuration.auto_mode == AUTO_MODE_LOWER  && get_sensorvalue() < configuration.threashold_dry) ||
-         (configuration.auto_mode == AUTO_MODE_TIMER)) {
-            pump_on();
-         }
-    } 
   }
+  
+  if(minutes_off >= configuration.minutes_off &&
+    (!is_sensor_config_ok() || get_sensorvalue() <= configuration.threashold_dry)) {
+      pump_on();
+  } 
 }
 
 void save_configuration() {
@@ -132,6 +158,16 @@ void set_color(uint8_t r, uint8_t g, uint8_t b) {
 
 void set_statuscolor_sensor() {
   int sensor = get_sensorvalue();
+
+  if(pump_is_on) {
+    set_color(0, 0, 255);
+    return;
+  }
+
+  if(!is_sensor_config_ok()) {
+    set_color(0, 0, 0);
+    return; 
+  }
 
   if(sensor >= configuration.threashold_wet) {
     set_color(0, 255, 0);
