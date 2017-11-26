@@ -22,11 +22,13 @@ void print_mainmenu() {
   Serial.println("\r\n* Giess-o-mat *");
   Serial.print("Pumpe  an Pin D"); Serial.println(PUMP_PIN);
   Serial.print("Sensor an Pin A"); Serial.println(SENSOR_PIN - A0);
+  Serial.print("Taster an Pin D"); Serial.println(BUTTON_PIN);
+  Serial.print("RGB LED an Pin D"); Serial.println(LED_PIN);
   Serial.print("vorletzte Pump-Zeit: "); show_lasttime_pump_on(1);
   Serial.print("letzte    Pump-Zeit: "); show_lasttime_pump_on(0);
   Serial.println("* Hauptmenue *");
   Serial.println(" u - Uhr stellen");
-  Serial.print  (" e - maximale Einschaltzeit: "); Serial.print(configuration.seconds_on); Serial.println(" sek");
+  Serial.print  (" e - maximale Einschaltzeit [sek]: "); Serial.println(configuration.seconds_on);
   Serial.print  (" a - minimale Ausschaltzeit [std:min]: ");
   char txtbuf[10];
   sprintf(txtbuf, "%02d:%02d", configuration.minutes_off / 60, configuration.minutes_off % 60);

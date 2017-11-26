@@ -26,6 +26,7 @@
 #define PUMP_PIN   1
 #define LED_PIN    6
 #define BUTTON_PIN 2
+#define BUTTON_PRESSED  LOW
 
 #define CPU_FREQUENCY_MHZ 16
 #define TIMER1_PRESCALE_US (256 / CPU_FREQUENCY_MHZ)

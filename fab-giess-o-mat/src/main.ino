@@ -84,8 +84,12 @@ void loop() {
   }
 }
 
+
+int button_last = HIGH;
+
 void loop_button() {
-  if(digitalRead(BUTTON_PIN) == LOW) {
+  int button_now = digitalRead(BUTTON_PIN);
+  if(button_now == BUTTON_PRESSED && button_last != BUTTON_PRESSED) {
     if(!pump_is_on) {
       pump_on();
     }
@@ -93,11 +97,19 @@ void loop_button() {
       pump_off();
     }
   }
+
+  if(button_now != BUTTON_PRESSED && button_last == BUTTON_PRESSED) {
+    if(pump_is_on) {
+      pump_off();
+    }
+  }
+
+  button_last = button_now;
 }
 
 void pump_on() {
   if(!pump_is_on) {
-    digitalWrite(PUMP_PIN, HIGH);
+    digitalWrite(PUMP_PIN, BUTTON_PRESSED);
     lasttime_pump_on[1] = lasttime_pump_on[0];
     lasttime_pump_on[0] = now();
   }
@@ -105,7 +117,7 @@ void pump_on() {
 }
 
 void pump_off() {
-  digitalWrite(PUMP_PIN, LOW);
+  digitalWrite(PUMP_PIN, !BUTTON_PRESSED);
   pump_is_on = false;
 }
 
@@ -143,7 +155,8 @@ void loop_giessomat() {
 
   if(seconds_on >= configuration.seconds_on ||
     (is_sensor_config_ok() && get_sensorvalue() >= configuration.threashold_wet)) {
-      pump_off();
+      if(digitalRead(BUTTON_PIN) != BUTTON_PRESSED)
+        pump_off();
   }
 
   if(minutes_off >= configuration.minutes_off &&
