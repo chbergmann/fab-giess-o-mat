@@ -42,6 +42,7 @@ void setup() {
   pinMode(SENSOR_PIN, INPUT);
   start_read_sensors();
   
+  setup_spi();
   Serial.begin(115200);
   print_mainmenu();
 }

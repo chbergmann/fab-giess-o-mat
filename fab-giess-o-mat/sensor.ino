@@ -117,7 +117,7 @@ ISR(TIMER1_COMPA_vect)          // timer compare interrupt service routine
 void calibrate_sensor() {
   Serial.println();
   Serial.println("Sensor trocken legen !");
-  calibrate_sensor(1, 100);
+  calibrate_sensor(1, 1000);
 }
 
 void calibrate_sensor(int start, int inc) {  
@@ -125,11 +125,14 @@ void calibrate_sensor(int start, int inc) {
     calibrate(t);
     if(sensorvalue < 150) {
       if(inc == 1) {
-        configuration.sensor_cntval = t - 1;
-        save_configuration();
-        Serial.print("Ermittelte Entladezeit [us]: ");
-        long microseconds = configuration.sensor_cntval * TIMER1_PRESCALE_US;
-        Serial.println(microseconds);
+        Serial.print("Ermittelte Entladezeit: ");
+        calibrate(t - 1);
+        if(sensorvalue > 20 && sensorvalue < 900) {
+          save_configuration();
+        }
+        else {
+          Serial.println("Der Sensor ist unbrauchbar !");
+        }        
       }
       else {
         calibrate_sensor(t - inc, inc / 10);

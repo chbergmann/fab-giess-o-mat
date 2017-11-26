@@ -22,7 +22,7 @@
 #include <avr/io.h>
 
 #define SENSOR_PIN A0
-#define PUMP_PIN   13
+#define PUMP_PIN   1
 
 #define CPU_FREQUENCY_MHZ 16
 #define TIMER1_PRESCALE_US (256 / CPU_FREQUENCY_MHZ)  
