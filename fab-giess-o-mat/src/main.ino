@@ -1,6 +1,6 @@
 /*
  *  This file is part of fab-giess-o-mat.
- *  
+ *
  *  fab-giess-o-mat is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
@@ -10,21 +10,26 @@
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  */
 
+#include <Arduino.h>
 #include <EEPROM.h>
 #include <TimeLib.h>
-#include "configuration.h"
 #include <Adafruit_NeoPixel.h>
 
-struct config_item configuration; 
-time_t lasttime_pump_on[2]; 
+#include "configuration.h"
+
+extern void setup_spi (void);
+
+struct config_item configuration;
+time_t lasttime_pump_on[2];
 Adafruit_NeoPixel ledstrip = Adafruit_NeoPixel(1, LED_PIN, NEO_GRB + NEO_KHZ800);
 bool pump_is_on = false;
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -37,10 +42,10 @@ void setup() {
     configuration.minutes_off = 24 * 60;
     configuration.sensor_cntval = 625;
   }
- 
+
   lasttime_pump_on[0] = 0;
   lasttime_pump_on[1] = 0;
-  
+
   pinMode(PUMP_PIN, OUTPUT);
   pinMode(SENSOR_PIN, INPUT);
   pinMode(LED_PIN, OUTPUT);
@@ -55,12 +60,12 @@ void setup() {
   digitalWrite(7, LOW);
   /* prototype board settings */
 
-  
+
   setup_spi();
   Serial.begin(115200);
   start_read_sensors();
   print_mainmenu();
-  
+
   ledstrip.begin();
 }
 
@@ -70,13 +75,13 @@ void loop() {
   loop_sensors();
   loop_mainmenu();
   loop_button();
-  
+
   if(millis() - last_millis >= 1000) {
     last_millis += 1000;
     show_time_sensor();
     set_statuscolor_sensor();
     loop_giessomat();
-  } 
+  }
 }
 
 void loop_button() {
@@ -136,15 +141,15 @@ void loop_giessomat() {
   uint16_t seconds_on = minute(difftime) * 60 + second(difftime);
   uint16_t minutes_off = hour(difftime) * 60 + minute(difftime);
 
-  if(seconds_on >= configuration.seconds_on || 
+  if(seconds_on >= configuration.seconds_on ||
     (is_sensor_config_ok() && get_sensorvalue() >= configuration.threashold_wet)) {
       pump_off();
   }
-  
+
   if(minutes_off >= configuration.minutes_off &&
     (!is_sensor_config_ok() || get_sensorvalue() <= configuration.threashold_dry)) {
       pump_on();
-  } 
+  }
 }
 
 void save_configuration() {
@@ -166,21 +171,20 @@ void set_statuscolor_sensor() {
 
   if(!is_sensor_config_ok()) {
     set_color(0, 0, 0);
-    return; 
+    return;
   }
 
   if(sensor >= configuration.threashold_wet) {
     set_color(0, 255, 0);
     return;
   }
-  
+
   if(sensor <= configuration.threashold_dry) {
     set_color(255, 0, 0);
     return;
   }
-  
+
   int diff = configuration.threashold_wet - configuration.threashold_dry;
-  int green = (sensor - configuration.threashold_dry) * 255 / diff; 
+  int green = (sensor - configuration.threashold_dry) * 255 / diff;
   set_color(255 - green, green, 0);
 }
-
