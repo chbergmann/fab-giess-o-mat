@@ -19,9 +19,11 @@
 #include <EEPROM.h>
 #include <TimeLib.h>
 #include "configuration.h"
+#include <Adafruit_NeoPixel.h>
 
 struct config_item configuration; 
 time_t lasttime_pump_on[2]; 
+Adafruit_NeoPixel ledstrip = Adafruit_NeoPixel(1, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 void setup() {
   // put your setup code here, to run once:
@@ -29,7 +31,8 @@ void setup() {
   if(configuration.auto_mode > AUTO_MODE_TIMER) {
     // Standardwerte
     configuration.auto_mode = AUTO_MODE_TIMER;
-    configuration.threashold = 250;
+    configuration.threashold_dry = 200;
+    configuration.threashold_wet = 300;
     configuration.seconds_on = 5;
     configuration.minutes_off = 24 * 60;
     configuration.sensor_cntval = 62;
@@ -40,11 +43,18 @@ void setup() {
   
   pinMode(PUMP_PIN, OUTPUT);
   pinMode(SENSOR_PIN, INPUT);
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(7, OUTPUT);
+  digitalWrite(5, HIGH);
+  digitalWrite(7, LOW);
   start_read_sensors();
   
   setup_spi();
   Serial.begin(115200);
   print_mainmenu();
+  
+  ledstrip.begin();
 }
 
 unsigned long last_millis = 0;
@@ -56,6 +66,7 @@ void loop() {
   if(millis() - last_millis >= 1000) {
     last_millis += 1000;
     show_time_sensor();
+    set_statuscolor_sensor();
     loop_giessomat();
   } 
 }
@@ -101,8 +112,8 @@ void loop_giessomat() {
     }
     
     if(minutes_off >= configuration.minutes_off) {
-      if((configuration.auto_mode == AUTO_MODE_HIGHER && get_sensorvalue() > configuration.threashold) ||
-         (configuration.auto_mode == AUTO_MODE_LOWER  && get_sensorvalue() < configuration.threashold) ||
+      if((configuration.auto_mode == AUTO_MODE_HIGHER && get_sensorvalue() > configuration.threashold_wet) ||
+         (configuration.auto_mode == AUTO_MODE_LOWER  && get_sensorvalue() < configuration.threashold_dry) ||
          (configuration.auto_mode == AUTO_MODE_TIMER)) {
             pump_on();
          }
@@ -112,5 +123,28 @@ void loop_giessomat() {
 
 void save_configuration() {
   EEPROM.put(EEPROM_ADDRESS_CONFIG, configuration);
+}
+
+void set_color(uint8_t r, uint8_t g, uint8_t b) {
+  ledstrip.setPixelColor(0, ledstrip.Color(r, g, b));
+  ledstrip.show();
+}
+
+void set_statuscolor_sensor() {
+  int sensor = get_sensorvalue();
+
+  if(sensor >= configuration.threashold_wet) {
+    set_color(0, 255, 0);
+    return;
+  }
+  
+  if(sensor <= configuration.threashold_dry) {
+    set_color(255, 0, 0);
+    return;
+  }
+  
+  int diff = configuration.threashold_wet - configuration.threashold_dry;
+  int green = (sensor - configuration.threashold_dry) * 255 / diff; 
+  set_color(255 - green, green, 0);
 }
 

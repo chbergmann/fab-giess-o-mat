@@ -23,6 +23,7 @@
 
 #define SENSOR_PIN A0
 #define PUMP_PIN   1
+#define LED_PIN    6
 
 #define CPU_FREQUENCY_MHZ 16
 #define TIMER1_PRESCALE_US (256 / CPU_FREQUENCY_MHZ)  
@@ -30,7 +31,8 @@
 struct config_item
 {
   unsigned char auto_mode;
-  uint16_t threashold;
+  uint16_t threashold_dry;
+  uint16_t threashold_wet;
   uint16_t seconds_on;
   uint16_t minutes_off;
   uint16_t sensor_cntval;

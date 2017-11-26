@@ -27,9 +27,12 @@
  
 #include "configuration.h"
 
-volatile int sensorvalue = 0;
 volatile bool mode_charging = true;
 volatile bool sensor_ready = false;
+volatile int sensorvalue;
+
+#define AVERAGE_COUNT 5
+volatile uint16_t average_sum = 0;
 
 void start_read_sensors() {
   sensor_ready = false;
@@ -68,7 +71,7 @@ void loop_print_sensors() {
   while(Serial.available() == 0) {
     loop_giessomat();
     if(sensor_ready) {
-      Serial.println(sensorvalue);
+      Serial.println(get_sensorvalue());
       start_read_sensors();
       while(millis() - last_millisec < 500);
       last_millisec = millis();
@@ -94,7 +97,7 @@ void start_discharge() {
 }
 
 int get_sensorvalue() {
-  return sensorvalue;
+  return average_sum / AVERAGE_COUNT;
 }
 
 ISR(TIMER1_COMPA_vect)          // timer compare interrupt service routine
@@ -105,6 +108,13 @@ ISR(TIMER1_COMPA_vect)          // timer compare interrupt service routine
   }
   else {
     sensorvalue = analogRead(SENSOR_PIN);
+    if(average_sum == 0) {
+      average_sum = sensorvalue * AVERAGE_COUNT;
+    }
+    else {
+      average_sum = average_sum / AVERAGE_COUNT * (AVERAGE_COUNT - 1);
+      average_sum += sensorvalue;
+    }
     sensor_ready = true;
     noInterrupts();           // disable all interrups
     TCCR1A = 0;
@@ -116,30 +126,44 @@ ISR(TIMER1_COMPA_vect)          // timer compare interrupt service routine
 
 void calibrate_sensor() {
   Serial.println();
-  Serial.println("Sensor trocken legen !");
-  calibrate_sensor(1, 1000);
+  Serial.println("Sensor trocken legen, dann Taste druecken");
+  wait_press_anykey();
+  if(calibrate_sensor(1, 1000) == false) {
+    Serial.println("Der Sensor funktioniert nicht !");
+    return;
+  }
+
+  configuration.threashold_dry = sensorvalue;
+  Serial.println("Jetzt maximale Feuchte, dann Taste druecken");
+  wait_press_anykey();
+  start_read_sensors();
+  while(!loop_sensors());
+  configuration.threashold_wet = sensorvalue;
+  save_configuration();
 }
 
-void calibrate_sensor(int start, int inc) {  
+bool calibrate_sensor(int start, int inc) {  
   for(int t=start; t< start + inc * 10; t = t + inc) {
     calibrate(t);
     if(sensorvalue < 150) {
       if(inc == 1) {
         Serial.print("Ermittelte Entladezeit: ");
+        average_sum = 0;
         calibrate(t - 1);
         if(sensorvalue > 20 && sensorvalue < 900) {
-          save_configuration();
+          return true;
         }
         else {
-          Serial.println("Der Sensor ist unbrauchbar !");
+          return false;
         }        
       }
       else {
         calibrate_sensor(t - inc, inc / 10);
       }
-      return;
+      return true;
     }
   }
+  return false;
 }
 
 void calibrate(int timerval) {

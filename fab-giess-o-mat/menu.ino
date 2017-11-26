@@ -47,11 +47,15 @@ void print_mainmenu() {
   Serial.println(txtbuf);
   Serial.println(" i - Pumpe ein");
   Serial.println(" o - Pumpe aus");
-  Serial.print  (" x - Schaltschwelle: "); Serial.println(configuration.threashold);
+  Serial.print  (" t - Schaltschwelle trocken: "); Serial.println(configuration.threashold_dry);
+  Serial.print  (" n - Schaltschwelle nass: "); Serial.println(configuration.threashold_wet);
   Serial.println(" s - Sensor lesen");
   Serial.println(" k - Sensor kalibrieren");
   Serial.print  (" c - Sensor Lese-Wartezeit [us]: "); Serial.println(configuration.sensor_cntval * 16);
   Serial.println();
+  
+  while(Serial.available() > 0)
+    Serial.read();
 } 
  
 void loop_mainmenu() {
@@ -119,9 +123,16 @@ void loop_mainmenu() {
           break;  
         }        
 
-        case 'x': {
-          Serial.print("\r\nSchaltschwelle: ");
-          configuration.threashold = Serial_readNumber();
+        case 't': {
+          Serial.print("\r\nSchaltschwelle trocken: ");
+          configuration.threashold_dry = Serial_readNumber();
+          save_configuration();
+          break;
+        }
+        
+        case 'n': {
+          Serial.print("\r\nSchaltschwelle nass: ");
+          configuration.threashold_wet = Serial_readNumber();
           save_configuration();
           break;
         }
@@ -184,5 +195,12 @@ void set_time() {
   Serial.print("\r\nJahr: ");
   int yr = Serial_readNumber();
   setTime(hr, mn, sec, dy, mnth, yr);
+}
+
+void wait_press_anykey() {
+  while(Serial.available() > 0)
+    Serial.read();
+    
+  while(Serial.available() == 0);
 }
 
