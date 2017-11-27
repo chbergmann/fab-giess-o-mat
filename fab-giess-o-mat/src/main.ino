@@ -37,7 +37,7 @@ void setup() {
   if(configuration.threashold_dry > 1023) {
     // Standardwerte
     configuration.threashold_dry = 0;
-    configuration.threashold_wet = 0;
+    configuration.threashold_wet = 1023;
     configuration.seconds_on = 5;
     configuration.minutes_off = 24 * 60;
     configuration.sensor_cntval = 625;
