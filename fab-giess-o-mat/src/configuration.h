@@ -22,11 +22,13 @@
 #include <Arduino.h>
 #include <avr/io.h>
 
-#define SENSOR_PIN A0
-#define PUMP_PIN   1
-#define LED_PIN    6
-#define BUTTON_PIN 2
+#define SENSOR_PIN A3
+#define PUMP_PIN   2
+#define LED_PIN    5
+#define BUTTON_PIN 3
 #define BUTTON_PRESSED  LOW
+#define PUMP_ON_VAL     HIGH
+#define RGB_BRIGHTNESS  64
 
 #define CPU_FREQUENCY_MHZ 16
 #define TIMER1_PRESCALE_US (256 / CPU_FREQUENCY_MHZ)

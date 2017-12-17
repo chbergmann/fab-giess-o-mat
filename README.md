@@ -2,9 +2,9 @@
 Eine Bewässerungssteuerung mit Arduino Mikrocontroller
 PlatformIO oder Arduino IDE Projekt
 
-# web-giess-o-mat
+# wifi-giess-o-mat
 Ein Wifi Modul zum aufstecken auf den fab-giess-o-mat
-Kommuniziert via SPI
+Kommuniziert via SPI mit dem fab-giess-o-mat Arduino
 PlatformIO Projekt
 
 ### Wiki

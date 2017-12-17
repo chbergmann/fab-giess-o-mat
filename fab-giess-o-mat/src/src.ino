@@ -52,12 +52,12 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   /* prototype board settings */
+  pinMode(2, OUTPUT);
   pinMode(4, OUTPUT);
-  pinMode(5, OUTPUT);
-  pinMode(7, OUTPUT);
-  digitalWrite(4, LOW);
-  digitalWrite(5, HIGH);
-  digitalWrite(7, LOW);
+  pinMode(6, OUTPUT);
+  digitalWrite(2, HIGH);
+  digitalWrite(4, HIGH);
+  digitalWrite(6, LOW);
   /* prototype board settings */
 
 
@@ -109,7 +109,7 @@ void loop_button() {
 
 void pump_on() {
   if(!pump_is_on) {
-    digitalWrite(PUMP_PIN, BUTTON_PRESSED);
+    digitalWrite(PUMP_PIN, PUMP_ON_VAL);
     lasttime_pump_on[1] = lasttime_pump_on[0];
     lasttime_pump_on[0] = now();
   }
@@ -117,7 +117,7 @@ void pump_on() {
 }
 
 void pump_off() {
-  digitalWrite(PUMP_PIN, !BUTTON_PRESSED);
+  digitalWrite(PUMP_PIN, !PUMP_ON_VAL);
   pump_is_on = false;
 }
 
@@ -178,7 +178,7 @@ void set_statuscolor_sensor() {
   int sensor = get_sensorvalue();
 
   if(pump_is_on) {
-    set_color(0, 0, 255);
+    set_color(0, 0, RGB_BRIGHTNESS);
     return;
   }
 
@@ -188,16 +188,16 @@ void set_statuscolor_sensor() {
   }
 
   if(sensor >= configuration.threashold_wet) {
-    set_color(0, 255, 0);
+    set_color(0, RGB_BRIGHTNESS, 0);
     return;
   }
 
   if(sensor <= configuration.threashold_dry) {
-    set_color(255, 0, 0);
+    set_color(RGB_BRIGHTNESS, 0, 0);
     return;
   }
 
   int diff = configuration.threashold_wet - configuration.threashold_dry;
-  int green = (sensor - configuration.threashold_dry) * 255 / diff;
-  set_color(255 - green, green, 0);
+  int green = (sensor - configuration.threashold_dry) * RGB_BRIGHTNESS / diff;
+  set_color(RGB_BRIGHTNESS - green, green, 0);
 }
