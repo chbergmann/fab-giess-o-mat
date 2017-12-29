@@ -38,8 +38,6 @@ void print_mainmenu() {
   Serial.print  (" t - Schaltschwelle trocken: "); Serial.println(configuration.threashold_dry);
   Serial.print  (" n - Schaltschwelle nass: "); Serial.println(configuration.threashold_wet);
   Serial.println(" s - Sensor lesen");
-  Serial.println(" k - Sensor kalibrieren");
-  Serial.print  (" c - Sensor Lese-Wartezeit [us]: "); Serial.println(configuration.sensor_cntval * 16);
   Serial.println(" i - Pumpe ein");
   Serial.println(" o - Pumpe aus");
   Serial.println();
@@ -54,13 +52,6 @@ void loop_mainmenu() {
         case 'u':
           set_time();
           break;
-
-        case 'c': {
-          Serial.print("\r\nnew timer value: ");
-          int us = Serial_readNumber();
-          configuration.sensor_cntval = us / 16;
-          break;
-        }
 
         case 'e': {
           Serial.print("\r\nEinschaltzeit in Sekunden: ");
@@ -105,10 +96,6 @@ void loop_mainmenu() {
 
         case 's':
           print_sensorvalues = true;
-          break;
-
-        case 'k':
-          calibrate_sensor();
           break;
       }
       print_mainmenu();

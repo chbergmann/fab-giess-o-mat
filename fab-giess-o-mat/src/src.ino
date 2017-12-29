@@ -34,13 +34,12 @@ bool pump_is_on = false;
 void setup() {
   // put your setup code here, to run once:
   EEPROM.get(EEPROM_ADDRESS_CONFIG, configuration);
-  if(configuration.threashold_dry > 1023) {
+  if(configuration.threashold_dry == 0) {
     // Standardwerte
-    configuration.threashold_dry = 0;
-    configuration.threashold_wet = 1023;
+    configuration.threashold_dry = 10000;
+    configuration.threashold_wet = 0;
     configuration.seconds_on = 5;
     configuration.minutes_off = 24 * 60;
-    configuration.sensor_cntval = 625;
   }
 
   lasttime_pump_on[0] = 0;
@@ -155,7 +154,7 @@ void show_lasttime_pump_on(uint8_t last) {
 
 bool is_sensor_config_ok() {
   bool use_sensor = false;
-  if(configuration.threashold_dry > 20 && configuration.threashold_wet > configuration.threashold_dry)
+  if(configuration.threashold_dry > 20 && configuration.threashold_wet < configuration.threashold_dry)
     use_sensor = true;
 
   return use_sensor;
@@ -167,13 +166,13 @@ void loop_giessomat() {
   uint16_t minutes_off = hour(difftime) * 60 + minute(difftime);
 
   if(seconds_on >= configuration.seconds_on ||
-    (is_sensor_config_ok() && get_sensorvalue() >= configuration.threashold_wet)) {
+    (is_sensor_config_ok() && get_sensorvalue() <= configuration.threashold_wet)) {
       if(digitalRead(BUTTON_PIN) != BUTTON_PRESSED)
         pump_off();
   }
 
   if(minutes_off >= configuration.minutes_off &&
-    (!is_sensor_config_ok() || get_sensorvalue() <= configuration.threashold_dry)) {
+    (!is_sensor_config_ok() || get_sensorvalue() >= configuration.threashold_dry)) {
       pump_on();
   }
 }
@@ -189,29 +188,29 @@ void set_color(uint8_t r, uint8_t g, uint8_t b) {
 
 void set_statuscolor_sensor() {
   int sensor = get_sensorvalue();
-
+/*
   if(pump_is_on) {
     set_color(0, 0, RGB_BRIGHTNESS);
     return;
   }
-
+*/
   if(!is_sensor_config_ok()) {
     set_color(0, 0, 0);
     return;
   }
 
-  if(sensor >= configuration.threashold_wet) {
+  if(sensor <= configuration.threashold_wet) {
     set_color(0, RGB_BRIGHTNESS, 0);
     return;
   }
 
-  if(sensor <= configuration.threashold_dry) {
+  if(sensor >= configuration.threashold_dry) {
     set_color(RGB_BRIGHTNESS, 0, 0);
     return;
   }
 
-  int diff = configuration.threashold_wet - configuration.threashold_dry;
-  int green = (sensor - configuration.threashold_dry) * RGB_BRIGHTNESS / diff;
+  int diff = configuration.threashold_dry - configuration.threashold_wet;
+  int green = (configuration.threashold_dry - sensor) * RGB_BRIGHTNESS / diff;
   set_color(RGB_BRIGHTNESS - green, green, 0);
 }
 

@@ -16,29 +16,21 @@
  *
  */
 
-#ifndef CONFIGURATION_H
-#define CONFIGURATION_H
-
 #include <Arduino.h>
-#include <avr/io.h>
+#include <FreqCount.h>
 
-#define SENSOR_PIN A3
-#define PUMP_PIN   2
-#define LED_PIN    7
-#define BUTTON_PIN 3
-#define BUTTON_PRESSED  LOW
-#define PUMP_ON_VAL     HIGH
-#define RGB_BRIGHTNESS  64
+unsigned long freqCountSensor_value = 0;
 
-struct config_item
-{
-  uint16_t threashold_dry;
-  uint16_t threashold_wet;
-  uint16_t seconds_on;
-  uint16_t minutes_off;
-};
+void freqCountSensor_init() {
+  FreqCount.begin(1000);
+}
 
-const int EEPROM_ADDRESS_CONFIG = 0;
-extern struct config_item configuration;
+void freqCountSensor_loop() {
+  if (FreqCount.available()) {
+    freqCountSensor_value = FreqCount.read();
+  }
+}
 
-#endif // CONFIGURATION_H
+int freqCountSensor_get_value() {
+  return freqCountSensor_value / 100;
+}
