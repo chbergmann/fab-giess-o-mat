@@ -18,6 +18,8 @@
 
 #include "configuration.h"
 
+extern bool print_sensorvalues;
+
 void print_mainmenu() {
   Serial.println("\r\n* Giess-o-mat *");
   Serial.print("Pumpe  an Pin D"); Serial.println(PUMP_PIN);
@@ -102,7 +104,7 @@ void loop_mainmenu() {
         }
 
         case 's':
-          loop_print_sensors();
+          print_sensorvalues = true;
           break;
 
         case 'k':

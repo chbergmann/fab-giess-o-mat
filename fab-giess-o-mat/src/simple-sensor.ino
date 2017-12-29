@@ -55,28 +55,12 @@ void start_read_sensors() {
   interrupts();
 }
 
-bool loop_sensors() {
+bool simpleSensor_loop() {
   if(sensor_ready) {
     start_read_sensors();
     return true;
   }
   return false;
-}
-
-void loop_print_sensors() {
-  unsigned long last_millisec = 0;
-  Serial.println();
-  start_read_sensors();
-
-  while(Serial.available() == 0) {
-    loop_giessomat();
-    if(sensor_ready) {
-      Serial.println(get_sensorvalue());
-      start_read_sensors();
-      while(millis() - last_millisec < 500);
-      last_millisec = millis();
-    }
-  }
 }
 
 void start_discharge() {
@@ -96,7 +80,7 @@ void start_discharge() {
   interrupts();
 }
 
-int get_sensorvalue() {
+int simpleSensor_get_value() {
   return average_sum / AVERAGE_COUNT;
 }
 
@@ -172,7 +156,7 @@ void calibrate_sensor() {
   Serial.println("Jetzt maximale Feuchte, dann Taste druecken");
   wait_press_anykey();
   start_read_sensors();
-  while(!loop_sensors());
+  while(!simpleSensor_loop());
   configuration.threashold_wet = sensorvalue;
   save_configuration();
 }

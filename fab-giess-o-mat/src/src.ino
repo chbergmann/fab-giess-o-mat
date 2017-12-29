@@ -53,32 +53,45 @@ void setup() {
 
   /* prototype board settings */
   pinMode(2, OUTPUT);
-  pinMode(4, OUTPUT);
   pinMode(6, OUTPUT);
+  pinMode(8, OUTPUT);
   digitalWrite(2, HIGH);
-  digitalWrite(4, HIGH);
-  digitalWrite(6, LOW);
+  digitalWrite(6, HIGH);
+  digitalWrite(8, LOW);
   /* prototype board settings */
 
 
   setup_spi();
   Serial.begin(115200);
-  start_read_sensors();
+  freqCountSensor_init();
   print_mainmenu();
 
   ledstrip.begin();
 }
 
+bool print_sensorvalues = false;
 unsigned long last_millis = 0;
 void loop() {
   // put your main code here, to run repeatedly:
-  loop_sensors();
+  freqCountSensor_loop();
   loop_mainmenu();
   loop_button();
 
   if(millis() - last_millis >= 1000) {
     last_millis += 1000;
-    show_time_sensor();
+    if(print_sensorvalues) {
+      if(Serial.available() > 0) {
+        print_sensorvalues = false;
+        print_mainmenu();
+      }
+      else {
+        uint16_t sval = get_sensorvalue();
+        Serial.println(sval);
+      }
+    }
+    else {
+      show_time_sensor();
+    }
     set_statuscolor_sensor();
     loop_giessomat();
   }
@@ -200,4 +213,8 @@ void set_statuscolor_sensor() {
   int diff = configuration.threashold_wet - configuration.threashold_dry;
   int green = (sensor - configuration.threashold_dry) * RGB_BRIGHTNESS / diff;
   set_color(RGB_BRIGHTNESS - green, green, 0);
+}
+
+int get_sensorvalue() {
+  return freqCountSensor_get_value();
 }

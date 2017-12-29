@@ -24,7 +24,7 @@
 
 #define SENSOR_PIN A3
 #define PUMP_PIN   2
-#define LED_PIN    5
+#define LED_PIN    7
 #define BUTTON_PIN 3
 #define BUTTON_PRESSED  LOW
 #define PUMP_ON_VAL     HIGH
