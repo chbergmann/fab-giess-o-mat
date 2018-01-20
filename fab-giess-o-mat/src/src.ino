@@ -34,7 +34,7 @@ bool pump_is_on = false;
 void setup() {
   // put your setup code here, to run once:
   EEPROM.get(EEPROM_ADDRESS_CONFIG, configuration);
-  if(configuration.threashold_dry == 0) {
+  if(configuration.threashold_dry == 0 || configuration.threashold_dry == 0xffff) {
     // Standardwerte
     configuration.threashold_dry = 10000;
     configuration.threashold_wet = 0;
@@ -50,19 +50,8 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
-  /* prototype board settings */
-  pinMode(2, OUTPUT);
-  pinMode(6, OUTPUT);
-  pinMode(8, OUTPUT);
-  digitalWrite(2, HIGH);
-  digitalWrite(6, HIGH);
-  digitalWrite(8, LOW);
-  /* prototype board settings */
-
-
   setup_spi();
   Serial.begin(115200);
-  freqCountSensor_init();
   print_mainmenu();
 
   ledstrip.begin();
@@ -72,21 +61,15 @@ bool print_sensorvalues = false;
 unsigned long last_millis = 0;
 void loop() {
   // put your main code here, to run repeatedly:
-  freqCountSensor_loop();
+  loop_sensors();
   loop_mainmenu();
   loop_button();
 
-  if(millis() - last_millis >= 1000) {
-    last_millis += 1000;
+  if(millis() - last_millis >= 250) {
+    last_millis += 250;
     if(print_sensorvalues) {
-      if(Serial.available() > 0) {
-        print_sensorvalues = false;
-        print_mainmenu();
-      }
-      else {
-        uint16_t sval = get_sensorvalue();
-        Serial.println(sval);
-      }
+        uint16_t sval1 = get_sensorvalue();
+        Serial.println(sval1);
     }
     else {
       show_time_sensor();
@@ -103,6 +86,7 @@ void loop_button() {
   int button_now = digitalRead(BUTTON_PIN);
   if(button_now == BUTTON_PRESSED && button_last != BUTTON_PRESSED) {
     if(!pump_is_on) {
+      //configuration.threashold_dry = get_sensorvalue();
       pump_on();
     }
     else {
@@ -112,6 +96,7 @@ void loop_button() {
 
   if(button_now != BUTTON_PRESSED && button_last == BUTTON_PRESSED) {
     if(pump_is_on) {
+      //configuration.threashold_wet = get_sensorvalue();
       pump_off();
     }
   }
@@ -161,6 +146,7 @@ bool is_sensor_config_ok() {
 }
 
 void loop_giessomat() {
+  int button_now = digitalRead(BUTTON_PIN);
   time_t difftime = now() - lasttime_pump_on[0];
   uint16_t seconds_on = minute(difftime) * 60 + second(difftime);
   uint16_t minutes_off = hour(difftime) * 60 + minute(difftime);
@@ -215,5 +201,5 @@ void set_statuscolor_sensor() {
 }
 
 int get_sensorvalue() {
-  return freqCountSensor_get_value();
+  return analogRead(SENSOR_PIN);
 }

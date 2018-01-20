@@ -22,9 +22,9 @@
 #include <Arduino.h>
 #include <avr/io.h>
 
-#define SENSOR_PIN A3
+#define SENSOR_PIN A1
 #define PUMP_PIN   2
-#define LED_PIN    7
+#define LED_PIN    9
 #define BUTTON_PIN 3
 #define BUTTON_PRESSED  LOW
 #define PUMP_ON_VAL     HIGH

@@ -48,6 +48,7 @@ void print_mainmenu() {
 
 void loop_mainmenu() {
   if(Serial.available() > 0) {
+      print_sensorvalues = false;
       switch(Serial.read()) {
         case 'u':
           set_time();
@@ -95,6 +96,7 @@ void loop_mainmenu() {
         }
 
         case 's':
+          Serial.println("Simple,Analog, FreqCount");
           print_sensorvalues = true;
           break;
       }
