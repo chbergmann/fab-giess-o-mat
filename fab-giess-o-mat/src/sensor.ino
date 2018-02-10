@@ -27,6 +27,8 @@
 
 #include "configuration.h"
 
+#define SIMPLE_SENSOR_PIN 6
+
 #define CHARGE_TIME_MS  250
 
 typedef enum {
@@ -49,8 +51,8 @@ void start_read_sensors() {
   sensor_ready = false;
 
   // charge condensators
-  pinMode(SENSOR_PIN, OUTPUT);
-  digitalWrite(SENSOR_PIN, HIGH);
+  pinMode(SIMPLE_SENSOR_PIN, OUTPUT);
+  digitalWrite(SIMPLE_SENSOR_PIN, HIGH);
   last_time = millis();
 }
 
@@ -79,8 +81,8 @@ void loop_sensors() {
 
 void start_discharge() {
 
-  pinMode(SENSOR_PIN, INPUT);
-  digitalWrite(SENSOR_PIN, LOW);
+  pinMode(SIMPLE_SENSOR_PIN, INPUT);
+  digitalWrite(SIMPLE_SENSOR_PIN, LOW);
   last_time = micros();
   ADCSRB = 0;
   ACSR =  bit (ACI)     // (Clear) Analog Comparator Interrupt Flag
@@ -89,7 +91,7 @@ void start_discharge() {
 }
 
 int simple_sensor_get_sensorvalue() {
-  return sensorvalue; //average_sum / AVERAGE_COUNT;
+  return 30000 - (average_sum / AVERAGE_COUNT);
 }
 
 ISR (ANALOG_COMP_vect)

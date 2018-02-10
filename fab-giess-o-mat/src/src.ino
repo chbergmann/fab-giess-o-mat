@@ -51,6 +51,19 @@ void setup() {
   pinMode(BUTTON_START_PIN, INPUT_PULLUP);
   pinMode(BUTTON_STOP_PIN, INPUT_PULLUP);
 
+  /* prototype 1 */
+  pinMode(A2, OUTPUT);
+  digitalWrite(A2, LOW);
+  pinMode(A5, OUTPUT);
+  digitalWrite(A5, LOW);
+  pinMode(3, OUTPUT);
+  digitalWrite(3, LOW);
+  pinMode(4, OUTPUT);
+  digitalWrite(4, HIGH);
+  pinMode(8, OUTPUT);
+  digitalWrite(8, HIGH);
+  /* prototype 1 */
+
   setup_spi();
   Serial.begin(115200);
 
@@ -96,6 +109,7 @@ void loop_buttons() {
   int button_now_start = digitalRead(BUTTON_START_PIN);
   if(button_now_start == BUTTON_PRESSED && button_last_start != BUTTON_PRESSED) {
     configuration.threashold_dry = get_sensorvalue();
+    configuration.seconds_on = 500;
     pump_on();
   }
   button_last_start = button_now_start;
@@ -105,6 +119,8 @@ void loop_buttons() {
     time_t difftime = now() - lasttime_pump_on[0];
     configuration.seconds_on = minute(difftime) * 60 + second(difftime);
     configuration.threashold_wet = get_sensorvalue();
+    if(is_sensor_config_ok())
+      save_configuration();
     pump_off();
   }
   button_last_stop = button_now_stop;
@@ -204,5 +220,6 @@ void set_statuscolor_sensor() {
 }
 
 int get_sensorvalue() {
-  return analogRead(SENSOR_PIN);
+  //return analogRead(SENSOR_PIN);
+  return simple_sensor_get_sensorvalue();
 }

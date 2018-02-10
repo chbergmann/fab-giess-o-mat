@@ -21,6 +21,7 @@
 extern bool print_sensorvalues;
 
 void print_mainmenu() {
+  Serial.println();
   Serial.print("vorletzte Pump-Zeit: "); show_lasttime_pump_on(1);
   Serial.print("letzte    Pump-Zeit: "); show_lasttime_pump_on(0);
   Serial.println();
@@ -106,10 +107,10 @@ int Serial_readNumber() {
   while(1) {
     if(Serial.available() > 0) {
       int num = Serial.read();
-      if(num == '\r' || num == '\n')
+      if(num == '\n')
         return number;
 
-      if(num >= '0' || num <= '9') {
+      if(num >= '0' && num <= '9') {
         number = number * 10 + num - '0';
         Serial.write(num);
       }
@@ -122,11 +123,12 @@ int Serial_readCharArray(char* buf, int len) {
       while(Serial.available() == 0);
       char c = Serial.read();
       Serial.write(c);
-      if(c == '\r' || c == '\n') {
+      if(c == '\n') {
         buf[l] = 0;
         return l-1;
       }
-      buf[l] = c;
+      if(c > 31)
+        buf[l] = c;
   }
   buf[len-1] = 0;
   return len-1;
