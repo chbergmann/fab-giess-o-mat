@@ -25,7 +25,9 @@
 #define SENSOR_PIN A1
 #define PUMP_PIN   2
 #define LED_PIN    9
-#define BUTTON_PIN 3
+#define BUTTON_START_PIN 3
+#define BUTTON_STOP_PIN 6
+
 #define BUTTON_PRESSED  LOW
 #define PUMP_ON_VAL     HIGH
 #define RGB_BRIGHTNESS  64

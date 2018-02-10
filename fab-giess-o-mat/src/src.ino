@@ -38,8 +38,8 @@ void setup() {
     // Standardwerte
     configuration.threashold_dry = 10000;
     configuration.threashold_wet = 0;
-    configuration.seconds_on = 5;
-    configuration.minutes_off = 24 * 60;
+    configuration.seconds_on = 500;
+    configuration.minutes_off = 60;
   }
 
   lasttime_pump_on[0] = 0;
@@ -48,13 +48,22 @@ void setup() {
   pinMode(PUMP_PIN, OUTPUT);
   pinMode(SENSOR_PIN, INPUT);
   pinMode(LED_PIN, OUTPUT);
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_START_PIN, INPUT_PULLUP);
+  pinMode(BUTTON_STOP_PIN, INPUT_PULLUP);
 
   setup_spi();
   Serial.begin(115200);
-  print_mainmenu();
 
   ledstrip.begin();
+
+  Serial.println("\r\n* fab-giess-o-mat *");
+  Serial.print("Pumpe  an Pin D"); Serial.println(PUMP_PIN);
+  Serial.print("Sensor an Pin A"); Serial.println(SENSOR_PIN - A0);
+  Serial.print("Taster Start an Pin D"); Serial.println(BUTTON_START_PIN);
+  Serial.print("Taster Stop  an Pin D"); Serial.println(BUTTON_STOP_PIN);
+  Serial.print("RGB LED an Pin D"); Serial.println(LED_PIN);
+
+  print_mainmenu();
 }
 
 bool print_sensorvalues = false;
@@ -63,7 +72,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   loop_sensors();
   loop_mainmenu();
-  loop_button();
+  loop_buttons();
 
   if(millis() - last_millis >= 250) {
     last_millis += 250;
@@ -80,28 +89,25 @@ void loop() {
 }
 
 
-int button_last = HIGH;
+int button_last_start = !BUTTON_PRESSED;
+int button_last_stop = !BUTTON_PRESSED;
 
-void loop_button() {
-  int button_now = digitalRead(BUTTON_PIN);
-  if(button_now == BUTTON_PRESSED && button_last != BUTTON_PRESSED) {
-    if(!pump_is_on) {
-      //configuration.threashold_dry = get_sensorvalue();
-      pump_on();
-    }
-    else {
-      pump_off();
-    }
+void loop_buttons() {
+  int button_now_start = digitalRead(BUTTON_START_PIN);
+  if(button_now_start == BUTTON_PRESSED && button_last_start != BUTTON_PRESSED) {
+    configuration.threashold_dry = get_sensorvalue();
+    pump_on();
   }
+  button_last_start = button_now_start;
 
-  if(button_now != BUTTON_PRESSED && button_last == BUTTON_PRESSED) {
-    if(pump_is_on) {
-      //configuration.threashold_wet = get_sensorvalue();
-      pump_off();
-    }
+  int button_now_stop = digitalRead(BUTTON_STOP_PIN);
+  if(button_now_stop != BUTTON_PRESSED && button_last_stop == BUTTON_PRESSED) {
+    time_t difftime = now() - lasttime_pump_on[0];
+    configuration.seconds_on = minute(difftime) * 60 + second(difftime);
+    configuration.threashold_wet = get_sensorvalue();
+    pump_off();
   }
-
-  button_last = button_now;
+  button_last_stop = button_now_stop;
 }
 
 void pump_on() {
@@ -146,15 +152,12 @@ bool is_sensor_config_ok() {
 }
 
 void loop_giessomat() {
-  int button_now = digitalRead(BUTTON_PIN);
   time_t difftime = now() - lasttime_pump_on[0];
   uint16_t seconds_on = minute(difftime) * 60 + second(difftime);
   uint16_t minutes_off = hour(difftime) * 60 + minute(difftime);
 
-  if(seconds_on >= configuration.seconds_on ||
-    (is_sensor_config_ok() && get_sensorvalue() <= configuration.threashold_wet)) {
-      if(digitalRead(BUTTON_PIN) != BUTTON_PRESSED)
-        pump_off();
+  if(seconds_on >= configuration.seconds_on) {
+    pump_off();
   }
 
   if(minutes_off >= configuration.minutes_off &&
