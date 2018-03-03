@@ -22,18 +22,21 @@
 #include <Arduino.h>
 #include <avr/io.h>
 
-#define SENSOR_PIN A1
+#define SENSOR_PIN A0
 #define PUMP_PIN   2
-#define LED_PIN    5
-#define BUTTON_START_PIN A0
-#define BUTTON_STOP_PIN A3
+#define LED_PIN    8
+#define BUTTON_START_PIN 3
+#define BUTTON_STOP_PIN 6
 
 #define BUTTON_PRESSED  LOW
 #define PUMP_ON_VAL     HIGH
 #define RGB_BRIGHTNESS  64
 
+#define VERSION   1
+
 struct config_item
 {
+  uint8_t  version;
   uint16_t threashold_dry;
   uint16_t threashold_wet;
   uint16_t seconds_on;

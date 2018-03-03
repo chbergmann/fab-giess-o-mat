@@ -107,7 +107,7 @@ int Serial_readNumber() {
   while(1) {
     if(Serial.available() > 0) {
       int num = Serial.read();
-      if(num == '\n')
+      if(num == '\n' || num == '\r')
         return number;
 
       if(num >= '0' && num <= '9') {

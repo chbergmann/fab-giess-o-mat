@@ -34,12 +34,13 @@ bool pump_is_on = false;
 void setup() {
   // put your setup code here, to run once:
   EEPROM.get(EEPROM_ADDRESS_CONFIG, configuration);
-  if(configuration.threashold_dry == 0 || configuration.threashold_dry == 0xffff) {
+  if(configuration.version != VERSION) {
     // Standardwerte
-    configuration.threashold_dry = 10000;
+    configuration.version = VERSION;
+    configuration.threashold_dry = 0;
     configuration.threashold_wet = 0;
     configuration.seconds_on = 500;
-    configuration.minutes_off = 60;
+    configuration.minutes_off = 1;
   }
 
   lasttime_pump_on[0] = 0;
@@ -51,18 +52,16 @@ void setup() {
   pinMode(BUTTON_START_PIN, INPUT_PULLUP);
   pinMode(BUTTON_STOP_PIN, INPUT_PULLUP);
 
-  /* prototype 1 */
+  pinMode(4, OUTPUT);
+  digitalWrite(4, LOW);
   pinMode(A2, OUTPUT);
   digitalWrite(A2, LOW);
-  pinMode(A5, OUTPUT);
-  digitalWrite(A5, LOW);
-  pinMode(3, OUTPUT);
-  digitalWrite(3, LOW);
-  pinMode(4, OUTPUT);
-  digitalWrite(4, HIGH);
-  pinMode(8, OUTPUT);
-  digitalWrite(8, HIGH);
-  /* prototype 1 */
+  pinMode(A1, OUTPUT);
+  digitalWrite(A1, HIGH);
+  pinMode(7, OUTPUT);
+  digitalWrite(7, HIGH);
+  pinMode(9, OUTPUT);
+  digitalWrite(9, LOW);
 
   setup_spi();
   Serial.begin(115200);
@@ -81,9 +80,10 @@ void setup() {
 
 bool print_sensorvalues = false;
 unsigned long last_millis = 0;
+
+
 void loop() {
   // put your main code here, to run repeatedly:
-  loop_sensors();
   loop_mainmenu();
   loop_buttons();
 
@@ -168,6 +168,9 @@ bool is_sensor_config_ok() {
 }
 
 void loop_giessomat() {
+  if(!is_sensor_config_ok())
+    return;
+
   time_t difftime = now() - lasttime_pump_on[0];
   uint16_t seconds_on = minute(difftime) * 60 + second(difftime);
   uint16_t minutes_off = hour(difftime) * 60 + minute(difftime);
@@ -177,7 +180,7 @@ void loop_giessomat() {
   }
 
   if(minutes_off >= configuration.minutes_off &&
-    (!is_sensor_config_ok() || get_sensorvalue() >= configuration.threashold_dry)) {
+    (get_sensorvalue() >= configuration.threashold_dry)) {
       pump_on();
   }
 }
@@ -200,7 +203,7 @@ void set_statuscolor_sensor() {
   }
 */
   if(!is_sensor_config_ok()) {
-    set_color(0, 0, 0);
+    set_color(0, 0, RGB_BRIGHTNESS);
     return;
   }
 
@@ -221,5 +224,5 @@ void set_statuscolor_sensor() {
 
 int get_sensorvalue() {
   //return analogRead(SENSOR_PIN);
-  return simple_sensor_get_sensorvalue();
+  return analogRead(SENSOR_PIN);
 }
