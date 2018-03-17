@@ -33,7 +33,7 @@ void setup_spi (void)
 
 volatile uint16_t sensorval = 0;
 volatile byte command = 0;
-volatile int bufptr = 0;
+volatile uint8_t bufptr = 0;
 
 // SPI interrupt routine
 ISR (SPI_STC_vect)

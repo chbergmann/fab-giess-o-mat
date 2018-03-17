@@ -22,12 +22,6 @@
 #include <Arduino.h>
 #include <avr/io.h>
 
-#define SENSOR_PIN A0
-#define PUMP_PIN   2
-#define LED_PIN    8
-#define BUTTON_START_PIN 3
-#define BUTTON_STOP_PIN 6
-
 #define BUTTON_PRESSED  LOW
 #define PUMP_ON_VAL     HIGH
 #define RGB_BRIGHTNESS  64
