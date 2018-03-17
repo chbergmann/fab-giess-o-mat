@@ -23,12 +23,12 @@
 
 #include "configuration.h"
 
-#define SENSOR_PIN PIN_A0
-#define PUMP_PIN   2
-#define LED_PIN    8
-#define SENSOR_FLUIDLEVEL_PIN	A5
-#define BUTTON_START_PIN 3
-#define BUTTON_STOP_PIN  6
+#define SENSOR_PIN 	PIN_A0
+#define PUMP_PIN   	2
+#define LED_PIN    	8
+#define SENSOR_FLUIDLEVEL_PIN		PIN_A5
+#define BUTTON_START_PIN 				3
+#define BUTTON_STOP_PIN  				6
 
 extern void setup_spi(void);
 
@@ -40,6 +40,8 @@ bool pump_is_on = false;
 
 void setup() {
 	pinMode(PUMP_PIN, OUTPUT);
+	digitalWrite(PUMP_PIN, !PUMP_ON_VAL);
+
 	pinMode(BUTTON_START_PIN, INPUT_PULLUP);
 
 	pinMode(BUTTON_STOP_PIN, INPUT_PULLUP);
@@ -47,14 +49,14 @@ void setup() {
 	digitalWrite(4, LOW);
 
 	pinMode(SENSOR_PIN, INPUT);
-	pinMode(A2, OUTPUT);
-	digitalWrite(A2, LOW);
-	pinMode(A1, OUTPUT);
-	digitalWrite(A1, HIGH);
+	pinMode(PIN_A2, OUTPUT);
+	digitalWrite(PIN_A2, LOW);
+	pinMode(PIN_A1, OUTPUT);
+	digitalWrite(PIN_A1, HIGH);
 
 	pinMode(SENSOR_FLUIDLEVEL_PIN, INPUT_PULLUP);
-	pinMode(A4, OUTPUT);
-	digitalWrite(A4, LOW);
+	pinMode(PIN_A4, OUTPUT);
+	digitalWrite(PIN_A4, LOW);
 
 	pinMode(LED_PIN, OUTPUT);
 	pinMode(7, OUTPUT);
@@ -82,18 +84,12 @@ void setup() {
 	ledstrip.begin();
 
 	Serial.println("\r\n* fab-giess-o-mat *");
-	Serial.print("Pumpe  an Pin D");
-	Serial.println(PUMP_PIN);
-	Serial.print("Sensor an Pin A");
-	Serial.println(SENSOR_PIN - A0);
-	Serial.print("Füllstandssensor an Pin ");
-	Serial.println(SENSOR_FLUIDLEVEL_PIN);
-	Serial.print("Taster Start an Pin D");
-	Serial.println(BUTTON_START_PIN);
-	Serial.print("Taster Stop  an Pin D");
-	Serial.println(BUTTON_STOP_PIN);
-	Serial.print("RGB LED an Pin D");
-	Serial.println(LED_PIN);
+	Serial.print("Pumpe  an Pin D"); Serial.println(PUMP_PIN);
+	Serial.print("Sensor an Pin A"); Serial.println(SENSOR_PIN - PIN_A0);
+	Serial.print("Füllstandssensor an Pin A"); Serial.println(SENSOR_FLUIDLEVEL_PIN - PIN_A0);
+	Serial.print("Taster Start an Pin D"); Serial.println(BUTTON_START_PIN);
+	Serial.print("Taster Stop  an Pin D"); Serial.println(BUTTON_STOP_PIN);
+	Serial.print("RGB LED an Pin D"); Serial.println(LED_PIN);
 
 	print_mainmenu();
 }
