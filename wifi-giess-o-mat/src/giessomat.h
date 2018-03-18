@@ -23,11 +23,11 @@
 
 struct config_item
 {
+  uint16_t version;
   uint16_t threashold_dry;
   uint16_t threashold_wet;
   uint16_t seconds_on;
   uint16_t minutes_off;
-  uint16_t sensor_cntval;
-};
+} __attribute__ ((packed));
 
 #endif // CONFIGURATION_H

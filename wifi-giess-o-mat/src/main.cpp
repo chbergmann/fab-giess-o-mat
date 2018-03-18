@@ -4,7 +4,7 @@
 #include "WifiManager.h"
 
 #ifdef ESP8266
-#include <ESP8266WiFi.h>
+#include <EWiFi.h>
 #elif defined ESP32
 #include <WiFi.h>
 #include "SPIFFS.h"
@@ -13,11 +13,6 @@
 #include <ESP8266FtpServer.h>
 FtpServer ftpSrv;   //set #define FTP_DEBUG in ESP8266FtpServer.h to see ftp verbose on serial
 
-#define SPI_SS_PIN  16
-
-#define htons(x)  __builtin_bswap16(x)
-
-extern void setup_wifimanager();
 extern void setup_webserver();
 extern void loop_webserver();
 
@@ -43,38 +38,43 @@ void setup() {
   }
 
   command = 's';
-  //SpiMaster.setup();
-  //SpiMaster.start_transfer(&command, 1, 2);
+  SpiMaster.setup();
+  SpiMaster.start_transfer(command, sizeof(uint16_t));
 }
+
+int last_sec = 0;
 
 void loop() {
   uint16_t sensorval = 0;
   struct config_item configuration;
 
-  wifiManager.loop();
-  SpiMaster.poll();
+  wifiManager.poll();
   ftpSrv.handleFTP();        //make sure in loop you call handleFTP()!!
   loop_webserver();
-/*
-  if(command == 's') {
-    if(SpiMaster.transfer_ready((byte*)&sensorval, sizeof(sensorval))) {
-      Serial.print("Sensor: \t"); Serial.println(htons(sensorval));
-      delay(1000);
-      command = 'c';
-      SpiMaster.start_transfer(&command, 1, sizeof(configuration));
-    }
+
+  int sec = millis() / 1000;
+  if(SpiMaster.poll() && last_sec != sec)
+  {
+	  last_sec = sec;
+
+	  if(command == 's') {
+			if(SpiMaster.transfer_ready((byte*)&sensorval, sizeof(sensorval))) {
+				Serial.print("Sensor: "); Serial.println(sensorval);
+				command = 'c';
+				SpiMaster.start_transfer(command, sizeof(configuration));
+			}
+	  }
+	  else if(command == 'c') {
+			if(SpiMaster.transfer_ready((uint8_t*)&configuration, sizeof(configuration))) {
+				Serial.println("Configuration:");
+				Serial.print("version \t"); Serial.println((configuration.version));
+				Serial.print("threashold_dry \t"); Serial.println((configuration.threashold_dry));
+				Serial.print("threashold_wet \t"); Serial.println((configuration.threashold_wet));
+				Serial.print("seconds_on \t"); Serial.println((configuration.seconds_on));
+				Serial.print("minutes_off \t"); Serial.println((configuration.minutes_off));
+				command = 's';
+				SpiMaster.start_transfer(command, sizeof(sensorval));
+			}
+	  }
   }
-  else if(command == 'c') {
-    if(SpiMaster.transfer_ready((byte*)&configuration, sizeof(configuration))) {
-      Serial.println("Configuration:");
-      Serial.print("threashold_dry \t"); Serial.println(htons(configuration.threashold_dry));
-      Serial.print("threashold_wet \t"); Serial.println(htons(configuration.threashold_wet));
-      Serial.print("seconds_on \t"); Serial.println(htons(configuration.seconds_on));
-      Serial.print("minutes_off \t"); Serial.println(htons(configuration.minutes_off));
-      Serial.print("sensor_cntval \t"); Serial.println(htons(configuration.sensor_cntval));
-      delay(1000);
-      command = 's';
-      SpiMaster.start_transfer(&command, 1, sizeof(sensorval));
-    }
-  }*/
 }

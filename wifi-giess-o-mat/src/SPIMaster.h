@@ -19,6 +19,8 @@
  #ifndef _SPIMASTER_H_INCLUDED
  #define _SPIMASTER_H_INCLUDED
 
+#include "SPI.h"
+
 enum SPI_STATE {
   SPI_STATE_IDLE,
   SPI_STATE_SEND,
@@ -26,22 +28,21 @@ enum SPI_STATE {
   SPI_STATE_READY
 };
 
+#define SPI_MAX_BYTES	128
+
 class SPIMaster {
-  int state;
-  byte *buffer;
-  int buflen;
-  int bufptr;
+  uint8_t recbuffer[SPI_MAX_BYTES];
+  uint8_t buflen;
+  uint8_t bufptr;
+  SPIClass spi;
 public:
   SPIMaster();
   virtual ~SPIMaster();
   void setup();
-  void poll();
-  void start_transfer(byte* data, int length);
-  void start_transfer(int recvlength);
-  void start_transfer(byte* data, int sendlength, int recvlength);
+  bool poll();
+  void start_transfer(uint8_t command, int length);
   void stop_transfer();
-  bool ready();
-  int  transfer_ready(byte* data, int length);
+  int  transfer_ready(uint8_t* data, int length);
 private:
   void setDataBits(uint16_t bits);
 };

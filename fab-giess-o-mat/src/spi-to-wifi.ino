@@ -25,33 +25,40 @@ void setup_spi (void)
   SPCR |= bit (SPE);
 
   // have to send on master in, *slave out*
-  pinMode (MISO, OUTPUT);
+  pinMode (PIN_SPI_MISO, OUTPUT);
+  pinMode (PIN_SPI_MOSI, INPUT);
+  pinMode (PIN_SPI_SCK,  INPUT);
+  pinMode (PIN_SPI_SS,   INPUT);
 
   // now turn on interrupts
   SPI.attachInterrupt();
 }
 
 volatile uint16_t sensorval = 0;
-volatile byte command = 0;
-volatile uint8_t bufptr = 0;
+volatile uint8_t command = 0;
+volatile uint8_t nxtbyte = 0;
 
 // SPI interrupt routine
 ISR (SPI_STC_vect)
 {
-  byte i = SPDR;
-  byte o = 0;
+	uint8_t bufptr = 0;
+	uint8_t i = SPDR;
 
   switch(i) {
     case 's': {
       command = i;
       sensorval = get_sensorvalue();
-      bufptr = 0;
       break;
     }
     case 'c': {
       command = i;
-      bufptr = 0;
       break;
+    }
+
+    default: {
+    	if(i >= 0 && i <= 9)
+    		bufptr = i;
+    	break;
     }
   }
 
@@ -59,18 +66,19 @@ ISR (SPI_STC_vect)
     case 's': {
       if(bufptr < sizeof(sensorval)) {
         uint8_t *pSens = (uint8_t*)&sensorval;
-        o = pSens[bufptr];
+        SPDR = pSens[bufptr];
       }
       break;
     }
     case 'c': {
       if(bufptr < sizeof(configuration)) {
         byte *pConfig = (byte*)&configuration;
-        o = pConfig[bufptr];
+        SPDR = pConfig[bufptr];
       }
       break;
     }
+    default:
+    	SPDR = i;
+    	break;
   }
-  SPDR = o;
-  bufptr++;
 }
