@@ -20,6 +20,9 @@ SPIMaster SpiMaster;
 WifiManager wifiManager;
 byte command = 0;
 
+uint16_t sensorval = 0;
+struct config_item configuration;
+
 void setup() {
   // put your setup code here, to run once:
 
@@ -45,14 +48,12 @@ void setup() {
 int last_sec = 0;
 
 void loop() {
-  uint16_t sensorval = 0;
-  struct config_item configuration;
 
   wifiManager.poll();
   ftpSrv.handleFTP();        //make sure in loop you call handleFTP()!!
   loop_webserver();
 
-  int sec = millis() / 1000;
+  int sec = millis() / 500;
   if(SpiMaster.poll() && last_sec != sec)
   {
 	  last_sec = sec;
@@ -66,12 +67,6 @@ void loop() {
 	  }
 	  else if(command == 'c') {
 			if(SpiMaster.transfer_ready((uint8_t*)&configuration, sizeof(configuration))) {
-				Serial.println("Configuration:");
-				Serial.print("version \t"); Serial.println((configuration.version));
-				Serial.print("threashold_dry \t"); Serial.println((configuration.threashold_dry));
-				Serial.print("threashold_wet \t"); Serial.println((configuration.threashold_wet));
-				Serial.print("seconds_on \t"); Serial.println((configuration.seconds_on));
-				Serial.print("minutes_off \t"); Serial.println((configuration.minutes_off));
 				command = 's';
 				SpiMaster.start_transfer(command, sizeof(sensorval));
 			}
