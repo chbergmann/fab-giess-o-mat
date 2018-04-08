@@ -25,6 +25,10 @@
 #define SPI_SS_PIN 		27
 #define ESP32_SPI_BUS	HSPI
 
+#define WAIT_AFTER_EACH_BYTE_MS	5
+
+unsigned long last_millis = 0;
+
 SPIMaster::SPIMaster() {
 	bufptr = 0;
 	buflen = 0;
@@ -58,6 +62,7 @@ void SPIMaster::start_transfer(uint8_t command, int recvlength) {
 	digitalWrite(SPI_SS_PIN, LOW);
 	spi.transfer(command);
 	digitalWrite(SPI_SS_PIN, HIGH);
+	last_millis = millis();
 }
 
 bool SPIMaster::poll() {
@@ -65,10 +70,14 @@ bool SPIMaster::poll() {
 		return true;
 	}
 
-	digitalWrite(SPI_SS_PIN, LOW);
-	recbuffer[bufptr] = spi.transfer(bufptr + 1);
-	digitalWrite(SPI_SS_PIN, HIGH);
-	bufptr++;
+	unsigned long now = millis();
+	if(now - last_millis >= WAIT_AFTER_EACH_BYTE_MS) {
+		last_millis = now;
+		digitalWrite(SPI_SS_PIN, LOW);
+		recbuffer[bufptr] = spi.transfer(bufptr + 1);
+		digitalWrite(SPI_SS_PIN, HIGH);
+		bufptr++;
+	}
 	return false;
 }
 

@@ -34,7 +34,7 @@ String wifiscanner_form() {
 
 	int n = WiFi.scanNetworks();
 	if (n == 0)
-		reply += F("Keine Access Points gefunden");
+		reply += F("<TR><TD>Keine Access Points gefunden");
 	else {
 		for (int i = 0; i < n; ++i) {
 			reply += F("<TR><TD>");
@@ -121,6 +121,17 @@ String handle_giesstab(){
 	reply += HTMLfoot();
 	return reply;
 }
+
+//********************************************************************************
+// Web Interface Firmware Update
+//********************************************************************************
+String handle_upload() {
+	String reply = HTMLhead("Firmware update");
+  reply += F("<form enctype=\"multipart/form-data\" method=\"post\"><p>Upload settings:<br><input type=\"file\" name=\"datafile\" size=\"40\"></p><div><input class=\"button-link\" type='submit' value='Upload'></div></form>");
+  reply += HTMLfoot();
+  return reply;
+}
+
 
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client,
 		AwsEventType type, void * arg, uint8_t *data, size_t len) {

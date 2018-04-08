@@ -30,12 +30,12 @@
 
 struct config_item
 {
-  uint8_t  version;
+  uint16_t version;
   uint16_t threashold_dry;
   uint16_t threashold_wet;
   uint16_t seconds_on;
   uint16_t minutes_off;
-};
+} __attribute__ ((packed));
 
 const int EEPROM_ADDRESS_CONFIG = 0;
 extern struct config_item configuration;

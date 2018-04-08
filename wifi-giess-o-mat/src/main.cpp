@@ -60,7 +60,7 @@ void loop() {
 
 	  if(command == 's') {
 			if(SpiMaster.transfer_ready((byte*)&sensorval, sizeof(sensorval))) {
-				Serial.print("Sensor: "); Serial.println(sensorval);
+				//Serial.print("Sensor: "); Serial.println(sensorval);
 				command = 'c';
 				SpiMaster.start_transfer(command, sizeof(configuration));
 			}
