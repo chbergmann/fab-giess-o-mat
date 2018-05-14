@@ -95,7 +95,7 @@ void WifiManager::saveConfig() {
 void WifiManager::poll() {
   ArduinoOTA.handle();
 
-	if (WiFi.status() == WL_CONNECTED)
+	if (WiFi.status() == WL_CONNECTED || AP_open)
 		return;
 
 	bool connected = false;

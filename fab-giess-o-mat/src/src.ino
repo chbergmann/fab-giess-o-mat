@@ -101,6 +101,7 @@ void loop() {
 	// put your main code here, to run repeatedly:
 	loop_mainmenu();
 	loop_buttons();
+	// loop_sensors();	// needed for simple sensor
 
 	if (millis() - last_millis >= 250) {
 		last_millis += 250;
@@ -129,11 +130,14 @@ void loop_buttons() {
 
 	int button_now_stop = digitalRead(BUTTON_STOP_PIN);
 	if (button_now_stop != BUTTON_PRESSED && button_last_stop == BUTTON_PRESSED) {
-		time_t difftime = now() - lasttime_pump_on[0];
-		configuration.seconds_on = minute(difftime) * 60 + second(difftime);
+		if(pump_is_on) {
+			time_t difftime = now() - lasttime_pump_on[0];
+			configuration.seconds_on = minute(difftime) * 60 + second(difftime);
+		}
 		configuration.threashold_wet = get_sensorvalue();
 		if (is_sensor_config_ok())
 			save_configuration();
+
 		pump_off();
 	}
 	button_last_stop = button_now_stop;
@@ -246,6 +250,6 @@ void set_statuscolor_sensor() {
 }
 
 uint16_t get_sensorvalue() {
-	//return analogRead(SENSOR_PIN);
+	//return simple_sensor_get_sensorvalue();
 	return analogRead(SENSOR_PIN);
 }

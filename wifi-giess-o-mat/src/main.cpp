@@ -2,6 +2,7 @@
 #include <SPIMaster.h>
 #include "giessomat.h"
 #include "WifiManager.h"
+#include "SVGChart.h"
 
 #ifdef ESP8266
 #include <EWiFi.h>
@@ -37,12 +38,13 @@ void setup() {
 #endif
     wifiManager.setup();
     setup_webserver();
-    ftpSrv.begin("esp8266","esp8266");    //username, password for ftp.  set ports in ESP8266FtpServer.h  (default 21, 50009 for PASV)
+    ftpSrv.begin("giessomat","giessomat");    //username, password for ftp.  set ports in ESP8266FtpServer.h  (default 21, 50009 for PASV)
   }
 
   command = 's';
   SpiMaster.setup();
   SpiMaster.start_transfer(command, sizeof(uint16_t));
+  giess_chart.setLabels("Sensorwerte", "Sekunden", "Wert");
 }
 
 int last_sec = 0;
@@ -53,7 +55,7 @@ void loop() {
   ftpSrv.handleFTP();        //make sure in loop you call handleFTP()!!
   loop_webserver();
 
-  int sec = millis() / 500;
+  int sec = millis() / 1000;
   if(SpiMaster.poll() && last_sec != sec)
   {
 	  last_sec = sec;
@@ -63,6 +65,7 @@ void loop() {
 				//Serial.print("Sensor: "); Serial.println(sensorval);
 				command = 'c';
 				SpiMaster.start_transfer(command, sizeof(configuration));
+				giess_chart.addPoint(sec, sensorval);
 			}
 	  }
 	  else if(command == 'c') {

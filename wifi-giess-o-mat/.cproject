@@ -106,7 +106,7 @@
 									<listOptionValue builtIn="false" value="F_CPU=240000000L"/>
 									<listOptionValue builtIn="false" value="HAVE_CONFIG_H"/>
 									<listOptionValue builtIn="false" value="MBEDTLS_CONFIG_FILE=&quot;mbedtls/esp_config.h&quot;"/>
-									<listOptionValue builtIn="false" value="PLATFORMIO=30502"/>
+									<listOptionValue builtIn="false" value="PLATFORMIO=30503"/>
 									<listOptionValue builtIn="false" value="ARDUINO_ESP32_DEV"/>
 									<listOptionValue builtIn="false" value="__DBL_MIN_EXP__=(-1021)"/>
 									<listOptionValue builtIn="false" value="__UINT_LEAST16_MAX__=0xffff"/>
@@ -330,7 +330,7 @@
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.149990277" languageId="org.eclipse.cdt.core.assembly" languageName="Assembly" sourceContentType="org.eclipse.cdt.core.asmSource" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.54121539" name="GNU C++" superClass="org.eclipse.cdt.build.core.settings.holder">
-								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1096940598" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" useByScannerDiscovery="false" valueType="includePath">
+								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.1096940598" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
 									<listOptionValue builtIn="false" value="${HOME}/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/config"/>
 									<listOptionValue builtIn="false" value="${HOME}/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/bluedroid"/>
 									<listOptionValue builtIn="false" value="${HOME}/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_trace"/>
@@ -404,7 +404,7 @@
 									<listOptionValue builtIn="false" value="${HOME}/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src"/>
 									<listOptionValue builtIn="false" value="${HOME}/.platformio/packages/tool-unity"/>
 								</option>
-								<option id="org.eclipse.cdt.build.core.settings.holder.symbols.1198905600" name="Symbols" superClass="org.eclipse.cdt.build.core.settings.holder.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
+								<option id="org.eclipse.cdt.build.core.settings.holder.symbols.1198905600" name="Symbols" superClass="org.eclipse.cdt.build.core.settings.holder.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="ARDUINO=10805"/>
 									<listOptionValue builtIn="false" value="ARDUINO_ARCH_ESP32"/>
 									<listOptionValue builtIn="false" value="ARDUINO_VARIANT=&quot;esp32&quot;"/>
@@ -414,7 +414,7 @@
 									<listOptionValue builtIn="false" value="F_CPU=240000000L"/>
 									<listOptionValue builtIn="false" value="HAVE_CONFIG_H"/>
 									<listOptionValue builtIn="false" value="MBEDTLS_CONFIG_FILE=&quot;mbedtls/esp_config.h&quot;"/>
-									<listOptionValue builtIn="false" value="PLATFORMIO=30502"/>
+									<listOptionValue builtIn="false" value="PLATFORMIO=30503"/>
 									<listOptionValue builtIn="false" value="ARDUINO_ESP32_DEV"/>
 									<listOptionValue builtIn="false" value="__DBL_MIN_EXP__=(-1021)"/>
 									<listOptionValue builtIn="false" value="__UINT_LEAST16_MAX__=0xffff"/>
@@ -638,7 +638,7 @@
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.762536863" languageId="org.eclipse.cdt.core.g++" languageName="GNU C++" sourceContentType="org.eclipse.cdt.core.cxxSource,org.eclipse.cdt.core.cxxHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
 							<tool id="org.eclipse.cdt.build.core.settings.holder.1310559623" name="GNU C" superClass="org.eclipse.cdt.build.core.settings.holder">
-								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.41298875" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" useByScannerDiscovery="false" valueType="includePath">
+								<option id="org.eclipse.cdt.build.core.settings.holder.incpaths.41298875" name="Include Paths" superClass="org.eclipse.cdt.build.core.settings.holder.incpaths" valueType="includePath">
 									<listOptionValue builtIn="false" value="${HOME}/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/config"/>
 									<listOptionValue builtIn="false" value="${HOME}/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/bluedroid"/>
 									<listOptionValue builtIn="false" value="${HOME}/.platformio/packages/framework-arduinoespressif32/tools/sdk/include/app_trace"/>
@@ -712,7 +712,7 @@
 									<listOptionValue builtIn="false" value="${HOME}/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src"/>
 									<listOptionValue builtIn="false" value="${HOME}/.platformio/packages/tool-unity"/>
 								</option>
-								<option id="org.eclipse.cdt.build.core.settings.holder.symbols.884639970" name="Symbols" superClass="org.eclipse.cdt.build.core.settings.holder.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
+								<option id="org.eclipse.cdt.build.core.settings.holder.symbols.884639970" name="Symbols" superClass="org.eclipse.cdt.build.core.settings.holder.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="ARDUINO=10805"/>
 									<listOptionValue builtIn="false" value="ARDUINO_ARCH_ESP32"/>
 									<listOptionValue builtIn="false" value="ARDUINO_VARIANT=&quot;esp32&quot;"/>
@@ -722,7 +722,7 @@
 									<listOptionValue builtIn="false" value="F_CPU=240000000L"/>
 									<listOptionValue builtIn="false" value="HAVE_CONFIG_H"/>
 									<listOptionValue builtIn="false" value="MBEDTLS_CONFIG_FILE=&quot;mbedtls/esp_config.h&quot;"/>
-									<listOptionValue builtIn="false" value="PLATFORMIO=30502"/>
+									<listOptionValue builtIn="false" value="PLATFORMIO=30503"/>
 									<listOptionValue builtIn="false" value="ARDUINO_ESP32_DEV"/>
 									<listOptionValue builtIn="false" value="__DBL_MIN_EXP__=(-1021)"/>
 									<listOptionValue builtIn="false" value="__UINT_LEAST16_MAX__=0xffff"/>
@@ -1056,7 +1056,7 @@
 									<listOptionValue builtIn="false" value="F_CPU=240000000L"/>
 									<listOptionValue builtIn="false" value="HAVE_CONFIG_H"/>
 									<listOptionValue builtIn="false" value="MBEDTLS_CONFIG_FILE=&quot;mbedtls/esp_config.h&quot;"/>
-									<listOptionValue builtIn="false" value="PLATFORMIO=30502"/>
+									<listOptionValue builtIn="false" value="PLATFORMIO=30503"/>
 									<listOptionValue builtIn="false" value="ARDUINO_ESP32_DEV"/>
 									<listOptionValue builtIn="false" value="__DBL_MIN_EXP__=(-1021)"/>
 									<listOptionValue builtIn="false" value="__UINT_LEAST16_MAX__=0xffff"/>
@@ -1364,7 +1364,7 @@
 									<listOptionValue builtIn="false" value="F_CPU=240000000L"/>
 									<listOptionValue builtIn="false" value="HAVE_CONFIG_H"/>
 									<listOptionValue builtIn="false" value="MBEDTLS_CONFIG_FILE=&quot;mbedtls/esp_config.h&quot;"/>
-									<listOptionValue builtIn="false" value="PLATFORMIO=30502"/>
+									<listOptionValue builtIn="false" value="PLATFORMIO=30503"/>
 									<listOptionValue builtIn="false" value="ARDUINO_ESP32_DEV"/>
 									<listOptionValue builtIn="false" value="__DBL_MIN_EXP__=(-1021)"/>
 									<listOptionValue builtIn="false" value="__UINT_LEAST16_MAX__=0xffff"/>
@@ -1672,7 +1672,7 @@
 									<listOptionValue builtIn="false" value="F_CPU=240000000L"/>
 									<listOptionValue builtIn="false" value="HAVE_CONFIG_H"/>
 									<listOptionValue builtIn="false" value="MBEDTLS_CONFIG_FILE=&quot;mbedtls/esp_config.h&quot;"/>
-									<listOptionValue builtIn="false" value="PLATFORMIO=30502"/>
+									<listOptionValue builtIn="false" value="PLATFORMIO=30503"/>
 									<listOptionValue builtIn="false" value="ARDUINO_ESP32_DEV"/>
 									<listOptionValue builtIn="false" value="__DBL_MIN_EXP__=(-1021)"/>
 									<listOptionValue builtIn="false" value="__UINT_LEAST16_MAX__=0xffff"/>

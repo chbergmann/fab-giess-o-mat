@@ -7,6 +7,7 @@
 #include <SPIFFSEditor.h>
 #include "WifiManager.h"
 #include "giessomat.h"
+#include "SVGChart.h"
 
 extern WifiManager wifiManager;
 extern uint16_t sensorval;
@@ -98,27 +99,34 @@ String handle_wificonnect(AsyncWebServerRequest *request) {
 String handle_giesstab(){
 	String reply = HTMLhead("Giess-o-mat Werte");
 	reply += F("<table id='tab1'>");
-	reply += F("<TR><TD>Sensor</TD><TD>");
+	reply += F("<TR><TD>Sensor</TD><TD id='td_val'>");
 	reply += String(sensorval);
 	reply += F("</TD></TR>");
-	reply += F("<TR><TD>Version</TD><TD>");
+	reply += F("<TR><TD>Version</TD><TD id='td_val'>");
 	reply += String(configuration.version);
 	reply += F("</TD></TR>");
-	reply += F("<TR><TD>Schaltschwelle trocken</TD><TD>");
+	reply += F("<TR><TD>Schaltschwelle trocken</TD><TD id='td_val'>");
 	reply += String(configuration.threashold_dry);
 	reply += F("</TD></TR>");
-	reply += F("<TR><TD>Schaltschwelle nass</TD><TD>");
+	reply += F("<TR><TD>Schaltschwelle nass</TD><TD id='td_val'>");
 	reply += String(configuration.threashold_wet);
 	reply += F("</TD></TR>");
-	reply += F("<TR><TD>Einschaltzeit</TD><TD>");
+	reply += F("<TR><TD>Einschaltzeit</TD><TD id='td_val'>");
 	reply += String(configuration.seconds_on);
 	reply += F("</TD></TR>");
-	reply += F("<TR><TD>Ausschaltzeit</TD><TD>");
+	reply += F("<TR><TD>Ausschaltzeit</TD><TD id='td_val'>");
 	reply += String(configuration.minutes_off);
 	reply += F("</TD></TR>");
 	reply += F("</table><br>");
 	reply += F("<a href='/giesstab'>aktualisieren</a>");
 	reply += HTMLfoot();
+	return reply;
+}
+
+String handle_chart()
+{
+	String reply = giess_chart.get();
+	Serial.println(reply);
 	return reply;
 }
 
@@ -279,6 +287,10 @@ void setup_webserver() {
 
 	server.on("/giesstab", HTTP_GET, [](AsyncWebServerRequest *request) {
 		request->send(200, "text/html", handle_giesstab());
+	});
+
+	server.on("/chart.svg", HTTP_GET, [](AsyncWebServerRequest *request) {
+		request->send(200, "image/svg+xml", handle_chart());
 	});
 
 	server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.htm");
