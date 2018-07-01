@@ -26,7 +26,7 @@
 #define PUMP_ON_VAL     HIGH
 #define RGB_BRIGHTNESS  64
 
-#define VERSION   1
+#define VERSION   2
 
 struct config_item
 {

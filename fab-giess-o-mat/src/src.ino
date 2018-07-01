@@ -26,9 +26,12 @@
 #define SENSOR_PIN 	PIN_A0
 #define PUMP_PIN   	2
 #define LED_PIN    	8
+#define LED_PIN_5V    	7
+#define LED_PIN_GND   	9
 #define SENSOR_FLUIDLEVEL_PIN		PIN_A5
-#define BUTTON_START_PIN 				3
-#define BUTTON_STOP_PIN  				6
+#define BUTTON_START_PIN 		3
+#define BUTTON_STOP_PIN  		6
+#define BUTTON_STOP_PIN_GND 4
 
 extern void setup_spi(void);
 
@@ -45,8 +48,8 @@ void setup() {
 	pinMode(BUTTON_START_PIN, INPUT_PULLUP);
 
 	pinMode(BUTTON_STOP_PIN, INPUT_PULLUP);
-	pinMode(4, OUTPUT);
-	digitalWrite(4, LOW);
+	pinMode(BUTTON_STOP_PIN_GND, OUTPUT);
+	digitalWrite(BUTTON_STOP_PIN_GND, LOW);
 
 	pinMode(SENSOR_PIN, INPUT);
 	pinMode(PIN_A2, OUTPUT);
@@ -59,18 +62,18 @@ void setup() {
 	digitalWrite(PIN_A4, LOW);
 
 	pinMode(LED_PIN, OUTPUT);
-	pinMode(7, OUTPUT);
-	digitalWrite(7, HIGH);
-	pinMode(9, OUTPUT);
-	digitalWrite(9, LOW);
+	pinMode(LED_PIN_5V, OUTPUT);
+	digitalWrite(LED_PIN_5V, HIGH);
+	pinMode(LED_PIN_GND, OUTPUT);
+	digitalWrite(LED_PIN_GND, LOW);
 
-	// Konfiguration aus nicht flüchtigen Speicher einlesen
+	// Konfiguration aus nicht fl��chtigen Speicher einlesen
 	EEPROM.get(EEPROM_ADDRESS_CONFIG, configuration);
 	if (configuration.version != VERSION) {
 		// Standardwerte
 		configuration.version = VERSION;
-		configuration.threashold_dry = 0;
-		configuration.threashold_wet = 0;
+		configuration.threashold_dry = 120;
+		configuration.threashold_wet = 100;
 		configuration.seconds_on = 500;
 		configuration.minutes_off = 1;
 	}
@@ -86,7 +89,7 @@ void setup() {
 	Serial.println("\r\n* fab-giess-o-mat *");
 	Serial.print("Pumpe  an Pin D"); Serial.println(PUMP_PIN);
 	Serial.print("Sensor an Pin A"); Serial.println(SENSOR_PIN - PIN_A0);
-	Serial.print("Füllstandssensor an Pin A"); Serial.println(SENSOR_FLUIDLEVEL_PIN - PIN_A0);
+	Serial.print("Fuellstandssensor an Pin A"); Serial.println(SENSOR_FLUIDLEVEL_PIN - PIN_A0);
 	Serial.print("Taster Start an Pin D"); Serial.println(BUTTON_START_PIN);
 	Serial.print("Taster Stop  an Pin D"); Serial.println(BUTTON_STOP_PIN);
 	Serial.print("RGB LED an Pin D"); Serial.println(LED_PIN);
@@ -116,31 +119,46 @@ void loop() {
 	}
 }
 
-int button_last_start = !BUTTON_PRESSED;
-int button_last_stop = !BUTTON_PRESSED;
+unsigned long button_last_start_time = 0;
+unsigned long button_last_stop_time = 0;
 
 void loop_buttons() {
 	int button_now_start = digitalRead(BUTTON_START_PIN);
-	if (button_now_start == BUTTON_PRESSED && button_last_start != BUTTON_PRESSED) {
-		configuration.threashold_dry = get_sensorvalue();
-		configuration.seconds_on = 500;
-		pump_on();
+	unsigned long time_pressed = millis() - button_last_start_time;
+	if (button_now_start != BUTTON_PRESSED) {
+		if(time_pressed > 3000) {
+			configuration.seconds_on = time_pressed / 1000;
+			lasttime_pump_on[0] = now();
+			save_configuration();
+			pump_off();
+		}
+		button_last_start_time = millis();
 	}
-	button_last_start = button_now_start;
+	else {
+		if(time_pressed > 20) {
+			pump_on();
+		}
+		if(time_pressed > 1000 && time_pressed < 1100) {
+			configuration.threashold_dry = get_sensorvalue();
+			save_configuration();
+		}
+	}
 
 	int button_now_stop = digitalRead(BUTTON_STOP_PIN);
-	if (button_now_stop != BUTTON_PRESSED && button_last_stop == BUTTON_PRESSED) {
-		if(pump_is_on) {
-			time_t difftime = now() - lasttime_pump_on[0];
-			configuration.seconds_on = minute(difftime) * 60 + second(difftime);
-		}
-		configuration.threashold_wet = get_sensorvalue();
-		if (is_sensor_config_ok())
-			save_configuration();
-
-		pump_off();
+	if (button_now_stop == !BUTTON_PRESSED) {
+		button_last_stop_time = millis();
 	}
-	button_last_stop = button_now_stop;
+	else {
+		unsigned long time_pressed = millis() - button_last_stop_time;
+		if(time_pressed > 20) {
+			pump_off();
+		}
+		if(time_pressed > 2000) {
+			lasttime_pump_on[0] = now();
+			configuration.threashold_wet = get_sensorvalue();
+			save_configuration();
+		}
+	}
 }
 
 void pump_on() {
@@ -206,6 +224,7 @@ void loop_giessomat() {
 
 void save_configuration() {
 	EEPROM.put(EEPROM_ADDRESS_CONFIG, configuration);
+	set_color(RGB_BRIGHTNESS, RGB_BRIGHTNESS, RGB_BRIGHTNESS);
 }
 
 void set_color(uint8_t r, uint8_t g, uint8_t b) {
